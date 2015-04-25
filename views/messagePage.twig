@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Message Board</title>
+  <link rel="stylesheet" type="text/css" href="css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+
+<body>
+    <div id="container">
+        <h1>Message Board</h1>
+        
+        <table class="message">
+            <tr>
+                <th>
+                    <a href="{{ message.author_id|e }}">{{ message.author_id|e }}</a>
+                    <span class="date">{{ message.post_time|e|date }}</span>
+                </th>
+            </tr>
+            <tr>
+                <td>{{ message.message_body|raw }}</td>
+            </tr>
+        </table>
+    
+        <div class="footer">
+            {% if user_id %}<a href="indieauth/logout">Logout</a> |{% endif %} Phubble
+        </div>
+    </div> <!-- /container -->
+</body>
+</html>

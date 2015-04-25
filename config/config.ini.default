@@ -1,0 +1,9 @@
+; Uncomment this line below to enable Twig template caching
+;templateCache = "/var/lib/phubble/tpl"
+
+[PdoStorage]
+dsn = "sqlite:/var/lib/phubble/storage.sqlite"
+;dsn = "mysql:host=localhost;dbname=mb"
+;username = "mb"
+;password = "s3cr3t"
+;dsn = "pgsql:host=localhost;port=5432;dbname=XYZ;user=ABC;password=DEF"

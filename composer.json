@@ -1,0 +1,24 @@
+{
+    "authors": [
+        {
+            "email": "fkooman@tuxed.net",
+            "name": "Fran\u00e7ois Kooman"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "fkooman\\MessageBoard": "src/"
+        }
+    },
+    "description": "A simple PHP message board",
+    "license": "AGPL-3.0",
+    "name": "fkooman/phubble",
+    "require": {
+        "ezyang/htmlpurifier": "~4.6",
+        "fkooman/ini": "~0.2.0",
+        "fkooman/rest": "~0.8.0",
+        "fkooman/rest-plugin-indieauth": "~0.2.2",
+        "php": ">= 5.4",
+        "twig/twig": "~1.15"
+    }
+}
