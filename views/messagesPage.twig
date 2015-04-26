@@ -11,24 +11,19 @@
 
 <body>
     <div id="container">
-        <div class="header">
-            <span class="pull-left">Phubble</span>
-            <div class="pull-right">
-                {% if not user_id %}
-                    <form method="post" action="indieauth/auth">
-                        https://<input required type="text" name="me" placeholder="example.org">
-                        <input type="submit" value="Sign In">
-                    </form>
-                {% else %}
-                    <a href="{{ user_id|e }}">{{ user_id|e }}</a> | <a href="indieauth/logout">Logout</a>
-                {% endif %}
-            </div>
-        </div> <!-- /header -->
+        <a class="header" href="."><h1>Phubble</h1></a>
+
+        {% if not user_id %}
+            <form class="try" method="post" action="indieauth/auth">
+                <span class="label">https://</span><input required type="text" name="me" placeholder="example.org">
+                <input type="submit" value="Sign In">
+            </form>
+        {% endif %}
 
         {% if user_id %}
         <form class="message" method="post">
             <textarea name="message_body" placeholder="Your Message..." required></textarea>
-            <button>Post</button>
+            <input type="submit" value="Post">
         </form>
         {% endif %}
 
@@ -36,13 +31,13 @@
             <p>No messages posted yet, be the first!</p>
         {% endif %}
 
-        <div class="prevnext">    
+        <div class="prevnext">
             {% if has_prev %}
-                <a class="pull-left" href="?p={{ page-1 }}"><button>&lt;Previous</button></a>
+                <a class="btn pull-left" href="?p={{ page-1 }}">&lt;Previous</a>
             {% endif %}
 
             {% if has_next %}
-                <a class="pull-right" href="?p={{ page+1 }}"><button>Next&gt;</button></a>
+                <a class="btn pull-right" href="?p={{ page+1 }}">Next&gt;</a>
             {% endif %}
         </div>
 
@@ -61,22 +56,17 @@
             <tr>
                 <td>{{ message.message_body|raw }}</td>
             </tr>
-            {% if message.author_id == user_id %}
-            <tr>
-                <td>
-                    <form method="post" action="{{ message.id|e }}">
-                        <input type="hidden" name="_METHOD" value="DELETE">
-                        <button>Delete</button>
-                    </form>
-                </td>
-            </tr>
-            {% endif %}
         </table>
         {% endfor %}
 
         <div class="footer">
-            | Phubble
-        </div>
+            <span class="pull-left">Phubble</span>
+            <span class="pull-right">
+            {% if user_id %}
+                {{ user_id|e }} | <a href="indieauth/logout">Logout</a> |
+            {% endif %}
+            </span>
+        </div> <!-- /footer -->
 
     </div> <!-- /container -->
 </body>

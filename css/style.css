@@ -8,21 +8,13 @@ div#container {
     line-height: 1.4;
 }
 
-div.header {
-    background-color: #eee;
-    width: 100%;
-    overflow: hidden;
-    height: 2em;
-    border: 1px solid #ddd;
+h1 {
+    border-bottom: 1px solid #000;
+    padding-bottom: 10px;
 }
 
 div.prevnext {
     overflow: hidden;
-}
-
-h1 {
-    border-bottom: 1px solid #000;
-    padding-bottom: 10px;
 }
 
 a.header {
@@ -37,9 +29,41 @@ a {
 
 table.message {
     width: 100%;
-    margin: 0;
+    margin: 0.5em 0;
     border: 1px solid #bbb;
     border-collapse: collapse;
+}
+
+span.label {
+    padding: 0.25em;
+    border: 1px solid #d5d5d5;
+    border-right: 0;
+    background-color: #e5e5e5;
+}
+
+input[type=text], textarea {
+    padding: 0.25em;
+    border: 1px solid #d5d5d5;
+}
+
+form.try {
+    text-align: center;
+    padding: 1em;
+    margin: 1em auto;
+}
+
+input[type=submit], a.btn {
+    padding: 0.25em;
+    border: 1px solid #ddd;
+    color: #000; 
+    background: #eee;
+    text-decoration: none;
+}
+
+input[type=submit].warn {
+    background-color: #b00;
+    border: 1px solid #a00;
+    color: #fff;
 }
 
 form.message {
@@ -79,11 +103,10 @@ span.date {
 }
 
 div.footer {
-    border-top: 1px solid #888;
-    padding: 0.5em;
-    text-align: right;
+    overflow: hidden;
     font-size: 85%;
     color: #888;
+    margin-bottom: 0.5em;
 }
 
 div.footer a {
