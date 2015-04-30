@@ -1,6 +1,10 @@
 ; Uncomment this line below to enable Twig template caching
 ;templateCache = "/var/lib/phubble/tpl"
 
+[Introspection]
+endpoint = "https://indiecert.net/token"
+secret = "f00b4r"
+
 [PdoStorage]
 dsn = "sqlite:/var/lib/phubble/storage.sqlite"
 ;dsn = "mysql:host=localhost;dbname=mb"

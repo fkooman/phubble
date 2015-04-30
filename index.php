@@ -20,6 +20,8 @@ require_once 'vendor/autoload.php';
 use fkooman\Ini\IniReader;
 use fkooman\MessageBoard\MessageBoardService;
 use fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication;
+use fkooman\Rest\Plugin\Bearer\BearerAuthentication;
+use fkooman\Rest\Plugin\Bearer\IntrospectionBearerValidator;
 use fkooman\MessageBoard\PdoStorage;
 use fkooman\MessageBoard\TemplateManager;
 
@@ -39,7 +41,19 @@ try {
     $templateManager = new TemplateManager($iniReader->v('templateCache', false, null));
 
     $service = new MessageBoardService($pdoStorage, $templateManager);
-    $service->registerOnMatchPlugin(new IndieAuthAuthentication());
+    $service->registerOnMatchPlugin(
+        new IndieAuthAuthentication()
+    );
+    $service->registerOnMatchPlugin(
+        new BearerAuthentication(
+            new IntrospectionBearerValidator(
+                $iniReader->v('Introspection', 'endpoint'),
+                $iniReader->v('Introspection', 'secret')
+            ),
+            'Phubble'
+        ),
+        array('defaultDisable' => true)
+    );
     $service->run()->sendResponse();
 } catch (Exception $e) {
     error_log(

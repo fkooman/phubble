@@ -28,6 +28,7 @@ use HTMLPurifier_Config;
 use fkooman\Http\Exception\BadRequestException;
 use fkooman\Http\Exception\UnauthorizedException;
 use fkooman\Http\Response;
+use fkooman\Rest\Plugin\Bearer\TokenInfo;
 
 class MessageBoardService extends Service
 {
@@ -104,12 +105,15 @@ class MessageBoardService extends Service
 
         $this->post(
             '/micropub/',
-            function (Request $request) {
-                return $this->micropubMessage($request);
+            function (Request $request, TokenInfo $tokenInfo) {
+                return $this->micropubMessage($request, $tokenInfo);
             },
             array(
-                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
-                    'requireAuth' => false
+                'skipPlugins' => array(
+                    'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication'
+                ),
+                'enablePlugins' => array(
+                    'fkooman\Rest\Plugin\Bearer\BearerAuthentication'
                 )
             )
         );
@@ -173,26 +177,9 @@ class MessageBoardService extends Service
         return new RedirectResponse($request->getRequestUri()->getUri(), 302);
     }
 
-    public function micropubMessage(Request $request)
+    public function micropubMessage(Request $request, TokenInfo $tokenInfo)
     {
-        $authHeader = $request->getHeader('Authorization');
-
-        // validate the token at the endpoint
-        $endpointUri = 'https://indiecert.net/token';
-        
-        $response = $this->client->get(
-            $endpointUri,
-            array(
-                'headers' => array(
-                    'Accept' => 'application/json',
-                    'Authorization' => $authHeader
-                )
-            )
-        );
-
-        $jsonData = $response->json();
-
-        $authorId = $jsonData['me'];
+        $authorId = $tokenInfo->get('sub');
         $messageBody = $this->validateMessageBody($request->getPostParameter('content'));
         $postTime = $this->io->getTime();
         $messageId = $this->io->getRandomHex();
@@ -201,6 +188,7 @@ class MessageBoardService extends Service
         
         $response = new Response(201);
         $response->setHeader('Location', $request->getAbsRoot() . $messageId);
+        
         return $response;
     }
 
