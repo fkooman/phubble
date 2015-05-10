@@ -38,7 +38,15 @@ try {
     );
     $pdoStorage = new PdoStorage($pdo);
 
+    $webmentionEndpoint = $iniReader->v('webmentionEndpoint', false, false);
+
     $templateManager = new TemplateManager($iniReader->v('templateCache', false, null));
+    $templateManager->setGlobalVariables(
+        array(
+            'webmentionEndpoint' => $webmentionEndpoint
+        )
+    );
+
     $service = new MessageBoardService($pdoStorage, $templateManager);
 
     $service->registerOnMatchPlugin(
