@@ -39,8 +39,8 @@ try {
     $pdoStorage = new PdoStorage($pdo);
 
     $templateManager = new TemplateManager($iniReader->v('templateCache', false, null));
-
     $service = new MessageBoardService($pdoStorage, $templateManager);
+
     $service->registerOnMatchPlugin(
         new IndieAuthAuthentication()
     );
@@ -54,7 +54,21 @@ try {
         ),
         array('defaultDisable' => true)
     );
-    $service->run()->sendResponse();
+
+    $response = $service->run();
+
+    // add Webmention response header if webmentionEndpoint is set in config
+    $webmentionEndpoint = $iniReader->v('webmentionEndpoint', false, false);
+    if (false !== $webmentionEndpoint) {
+        $response->setHeader(
+            'Link',
+            sprintf(
+                '<%s>; rel="webmention"',
+                $webmentionEndpoint
+            )
+        );
+    }
+    $response->sendResponse();
 } catch (Exception $e) {
     error_log(
         $e->getMessage()

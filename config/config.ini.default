@@ -1,6 +1,8 @@
 ; Uncomment this line below to enable Twig template caching
 ;templateCache = "/var/lib/phubble/tpl"
 
+;webmentionEndpoint = 'https://www.tuxed.net/webmention/'
+
 [Introspection]
 endpoint = "https://indiecert.net/token"
 secret = "f00b4r"
