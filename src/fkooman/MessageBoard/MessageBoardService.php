@@ -17,18 +17,18 @@
 
 namespace fkooman\MessageBoard;
 
-use fkooman\Http\Request;
-use fkooman\Rest\Service;
-use GuzzleHttp\Client;
-use fkooman\Http\RedirectResponse;
-use fkooman\Rest\Plugin\UserInfo;
-use InvalidArgumentException;
-use HTMLPurifier;
-use HTMLPurifier_Config;
 use fkooman\Http\Exception\BadRequestException;
 use fkooman\Http\Exception\UnauthorizedException;
+use fkooman\Http\RedirectResponse;
+use fkooman\Http\Request;
 use fkooman\Http\Response;
 use fkooman\Rest\Plugin\Bearer\TokenInfo;
+use fkooman\Rest\Plugin\UserInfo;
+use fkooman\Rest\Service;
+use GuzzleHttp\Client;
+use HTMLPurifier;
+use HTMLPurifier_Config;
+use InvalidArgumentException;
 
 class MessageBoardService extends Service
 {
@@ -171,11 +171,18 @@ class MessageBoardService extends Service
     {
         $authorId = $userInfo->getUserId();
         $messageBody = $this->validateMessageBody($request->getPostParameter('message_body'));
+
         $postTime = $this->io->getTime();
         $messageId = $this->io->getRandomHex();
 
         $this->pdoStorage->storeMessage($messageId, $authorId, $messageBody, $postTime);
 
+        $messageUrls = $this->extractUrls($messageBody);
+        $source = $request->getAbsRoot() . $messageId;
+        foreach ($messageUrls as $u) {
+            $this->sendWebmention($source, $u);
+        }
+    
         return new RedirectResponse($request->getRequestUri()->getUri(), 302);
     }
 
@@ -192,6 +199,21 @@ class MessageBoardService extends Service
         $response->setHeader('Location', $request->getAbsRoot() . $messageId);
         
         return $response;
+    }
+
+    private function extractUrls($messageBody)
+    {
+        // find all {a,link} href on a page and send webmentions to them if
+        // the URL is absolute
+        // parse DOM, do not parse plain text, too complicated
+        return array();
+    }
+
+    private function sendWebmention($source, $target)
+    {
+        // send a webmention to the target that we mentioned them
+        // check the link header, or the page content for the webmention
+        // endpoint, mention it...
     }
 
     private function validateMessageBody($messageBody)
