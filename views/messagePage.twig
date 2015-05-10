@@ -33,15 +33,15 @@
         </form>
         {% endif %}
 
-        <table class="message">
+        <table class="message h-entry">
             <tr>
                 <th>
-                    <a href="{{ message.author_id|e }}">{{ message.author_id|e }}</a>
+                    <a class="p-author" href="{{ message.author_id|e }}">{{ message.author_id|e }}</a>
                     <span class="date">{{ message.post_time|e|date }}</span>
                 </th>
             </tr>
             <tr>
-                <td>{{ message.message_body|raw }}</td>
+                <td class="e-content">{{ message.message_body|raw }}</td>
             </tr>
         </table>
 
