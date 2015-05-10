@@ -39,6 +39,15 @@
                 <td>{{ message.message_body|raw }}</td>
             </tr>
         </table>
+
+        {% if mentions %}
+        <h3>Mentions</h3>
+        <ul class="mentions">
+            {% for mention in mentions %}
+                <li><a href="{{ mention.source|e }}">{{ mention.source|e }}</a></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
     
         <div class="footer">
             <span class="pull-left">Phubble</span>

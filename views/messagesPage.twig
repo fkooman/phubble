@@ -56,6 +56,9 @@
             <tr>
                 <td>{{ message.message_body|raw }}</td>
             </tr>
+            {% if message.mention_count %}
+            <tr><td><span class="mention_count">{{message.mention_count|e}} mention(s)</span></td></tr>
+            {% endif %}
         </table>
         {% endfor %}
 

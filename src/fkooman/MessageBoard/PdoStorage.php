@@ -53,6 +53,26 @@ class PdoStorage
         }
     }
 
+    public function getMentions($id)
+    {
+        $stmt = $this->db->prepare(
+            sprintf(
+                'SELECT source, time FROM %s WHERE id = :id ORDER BY time DESC',
+                $this->prefix.'mentions'
+            )
+        );
+        $stmt->bindValue(':id', $id, PDO::PARAM_STR);
+        
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // FIXME: returns empty array when no configurations or still false?
+        if (false !== $result) {
+            return $result;
+        }
+
+        return array();
+    }
+
     public function getMessage($id)
     {
         $stmt = $this->db->prepare(
@@ -89,7 +109,8 @@ class PdoStorage
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT id, author_id, message_body, post_time FROM %s ORDER BY post_time DESC LIMIT %d,5',
+                'SELECT me.id, me.author_id, me.message_body, me.post_time, (SELECT COUNT(*) FROM %s mn WHERE me.id = mn.id) AS mention_count FROM %s me ORDER BY post_time DESC LIMIT %d,5',
+                $this->prefix.'mentions',
                 $this->prefix.'messages',
                 intval($page) * 5
             )
@@ -121,6 +142,16 @@ class PdoStorage
             $prefix.'messages'
         );
 
+        $query[] = sprintf(
+            'CREATE TABLE IF NOT EXISTS %s (
+                id VARCHAR(64) NOT NULL,
+                source VARCHAR(255) NOT NULL,
+                time INT NOT NULL,
+                UNIQUE (id, source)
+            )',
+            $prefix.'mentions'
+        );
+
         return $query;
     }
 
@@ -131,7 +162,7 @@ class PdoStorage
             $this->db->query($q);
         }
 
-        $tables = array('messages');
+        $tables = array('messages', 'mentions');
         foreach ($tables as $t) {
             // make sure the tables are empty
             $this->db->query(

@@ -113,6 +113,20 @@ div.footer a {
     color: #888;
 }
 
+ul.mentions {
+    color: #888;    
+}
+
+ul.mentions li a {
+    color: #888;
+}
+
+span.mention_count {
+    float: right;
+    font-size: 85%;
+    color: #888;
+}
+
 .pull-left {
     float: left;
 }

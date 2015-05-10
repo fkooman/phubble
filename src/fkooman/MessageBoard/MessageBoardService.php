@@ -144,12 +144,14 @@ class MessageBoardService extends Service
     {
         // FIXME: validate $id!
         $message = $this->pdoStorage->getMessage($id);
+        $mentions = $this->pdoStorage->getMentions($id);
         $userId = null !== $userInfo ? $userInfo->getUserId() : null;
 
         return $this->templateManager->render(
             'messagePage',
             array(
                 'message' => $message,
+                'mentions' => $mentions,
                 'user_id' => $userId
             )
         );
