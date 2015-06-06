@@ -14,11 +14,9 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 namespace fkooman\MessageBoard;
 
 use fkooman\Http\Exception\BadRequestException;
-use fkooman\Http\Exception\UnauthorizedException;
 use fkooman\Http\RedirectResponse;
 use fkooman\Http\Request;
 use fkooman\Http\Response;
@@ -28,7 +26,6 @@ use fkooman\Rest\Service;
 use GuzzleHttp\Client;
 use HTMLPurifier;
 use HTMLPurifier_Config;
-use InvalidArgumentException;
 
 class MessageBoardService extends Service
 {
@@ -59,12 +56,12 @@ class MessageBoardService extends Service
             $client = new Client();
         }
         $this->client = $client;
-   
+
         if (null === $io) {
             $io = new IO();
         }
         $this->io = $io;
-    
+
         $this->get(
             '/',
             function (Request $request, UserInfo $userInfo = null) {
@@ -72,8 +69,8 @@ class MessageBoardService extends Service
             },
             array(
                 'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
-                    'requireAuth' => false
-                )
+                    'requireAuth' => false,
+                ),
             )
         );
 
@@ -84,8 +81,8 @@ class MessageBoardService extends Service
             },
             array(
                 'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
-                    'requireAuth' => false
-                )
+                    'requireAuth' => false,
+                ),
             )
         );
 
@@ -110,11 +107,11 @@ class MessageBoardService extends Service
             },
             array(
                 'skipPlugins' => array(
-                    'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication'
+                    'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication',
                 ),
                 'enablePlugins' => array(
-                    'fkooman\Rest\Plugin\Bearer\BearerAuthentication'
-                )
+                    'fkooman\Rest\Plugin\Bearer\BearerAuthentication',
+                ),
             )
         );
     }
@@ -135,7 +132,7 @@ class MessageBoardService extends Service
                 'messages' => $messages,
                 'has_prev' => $page > 0,
                 'has_next' => $actualCount === 5,
-                'user_id' => $userId
+                'user_id' => $userId,
             )
         );
     }
@@ -152,7 +149,7 @@ class MessageBoardService extends Service
             array(
                 'message' => $message,
                 'mentions' => $mentions,
-                'user_id' => $userId
+                'user_id' => $userId,
             )
         );
     }
@@ -161,7 +158,7 @@ class MessageBoardService extends Service
     {
         // FIXME: validate $id!
         $message = $this->pdoStorage->deleteMessage($id);
-        
+
         // FIXME: check if userid owns the post!
 
         return new RedirectResponse($request->getAbsRoot(), 302);
@@ -178,11 +175,11 @@ class MessageBoardService extends Service
         $this->pdoStorage->storeMessage($messageId, $authorId, $messageBody, $postTime);
 
         $messageUrls = $this->extractUrls($messageBody);
-        $source = $request->getAbsRoot() . $messageId;
+        $source = $request->getAbsRoot().$messageId;
         foreach ($messageUrls as $u) {
             $this->sendWebmention($source, $u);
         }
-    
+
         return new RedirectResponse($request->getRequestUri()->getUri(), 302);
     }
 
@@ -194,10 +191,10 @@ class MessageBoardService extends Service
         $messageId = $this->io->getRandomHex();
 
         $this->pdoStorage->storeMessage($messageId, $authorId, $messageBody, $postTime);
-        
+
         $response = new Response(201);
-        $response->setHeader('Location', $request->getAbsRoot() . $messageId);
-        
+        $response->setHeader('Location', $request->getAbsRoot().$messageId);
+
         return $response;
     }
 
@@ -227,7 +224,7 @@ class MessageBoardService extends Service
         if (255 < strlen($messageBody)) {
             throw new BadRequestException('message body can only contain 255 characters');
         }
-    
+
         // purify the input
         $c = HTMLPurifier_Config::createDefault();
         $c->set('Cache.DefinitionImpl', null);

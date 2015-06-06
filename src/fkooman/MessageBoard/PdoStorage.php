@@ -14,7 +14,6 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 namespace fkooman\MessageBoard;
 
 use PDO;
@@ -62,7 +61,7 @@ class PdoStorage
             )
         );
         $stmt->bindValue(':id', $id, PDO::PARAM_STR);
-        
+
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         // FIXME: returns empty array when no configurations or still false?
@@ -89,7 +88,7 @@ class PdoStorage
             return $result;
         }
 
-        return null;
+        return;
     }
 
     public function deleteMessage($id)
@@ -115,7 +114,7 @@ class PdoStorage
                 intval($page) * 5
             )
         );
-        
+
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         // FIXME: returns empty array when no configurations or still false?
@@ -123,9 +122,8 @@ class PdoStorage
             return $result;
         }
 
-        return null;
+        return;
     }
-
 
     public static function createTableQueries($prefix)
     {

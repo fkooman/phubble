@@ -14,7 +14,6 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 require_once dirname(__DIR__).'/vendor/autoload.php';
 
 use fkooman\Ini\IniReader;
@@ -46,7 +45,7 @@ $webmentionEndpoint = $iniReader->v('webmentionEndpoint', false, false);
 $templateManager = new TemplateManager($iniReader->v('templateCache', false, null));
 $templateManager->setGlobalVariables(
     array(
-        'webmentionEndpoint' => $webmentionEndpoint
+        'webmentionEndpoint' => $webmentionEndpoint,
     )
 );
 

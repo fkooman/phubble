@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Message Board</title>
-   
+
   {% if webmentionEndpoint %}
   <link rel="webmention" href="{{ webmentionEndpoint|e }}">
   {% endif %}
@@ -25,7 +25,7 @@
                 <input type="submit" value="Sign In">
             </form>
         {% endif %}
-        
+
         {% if message.author_id == user_id %}
         <form method="post" action="{{ message.id|e }}">
             <input type="hidden" name="_METHOD" value="DELETE">
@@ -53,7 +53,7 @@
             {% endfor %}
         </ul>
         {% endif %}
-    
+
         <div class="footer">
             <span class="pull-left">Phubble</span>
             <span class="pull-right">
