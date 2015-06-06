@@ -127,7 +127,7 @@ class MessageBoardService extends Service
                 'page' => $page,
                 'messages' => $messages,
                 'has_prev' => $page > 0,
-                'has_next' => $actualCount === 5,
+                'has_next' => $actualCount === 50,
                 'user_id' => $userId,
             )
         );

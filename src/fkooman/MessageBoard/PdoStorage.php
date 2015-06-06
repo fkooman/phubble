@@ -108,10 +108,10 @@ class PdoStorage
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT me.id, me.author_id, me.message_body, me.post_time, (SELECT COUNT(*) FROM %s mn WHERE me.id = mn.id) AS mention_count FROM %s me ORDER BY post_time DESC LIMIT %d,5',
+                'SELECT me.id, me.author_id, me.message_body, me.post_time, (SELECT COUNT(*) FROM %s mn WHERE me.id = mn.id) AS mention_count FROM %s me ORDER BY post_time DESC LIMIT %d,50',
                 $this->prefix.'mentions',
                 $this->prefix.'messages',
-                intval($page) * 5
+                intval($page) * 50
             )
         );
 
