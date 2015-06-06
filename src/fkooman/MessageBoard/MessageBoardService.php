@@ -121,7 +121,7 @@ class MessageBoardService extends Service
 
     public function getMessages(Request $request, $userInfo)
     {
-        $page = $request->getQueryParameter('p');
+        $page = $request->getUrl()->getQueryParameter('p');
 
         $messages = $this->pdoStorage->getMessages($page);
         $actualCount = count($messages);
