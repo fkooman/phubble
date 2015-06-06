@@ -179,12 +179,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/fkooman/php-lib-rest-plugin-bearer.git",
-                "reference": "ab432831b84bd843ede8ede46bd5483b9fecec45"
+                "reference": "d6a722f703b0bc074f7ecae48e8ece9e45ba2394"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-rest-plugin-bearer/zipball/ab432831b84bd843ede8ede46bd5483b9fecec45",
-                "reference": "ab432831b84bd843ede8ede46bd5483b9fecec45",
+                "url": "https://api.github.com/repos/fkooman/php-lib-rest-plugin-bearer/zipball/d6a722f703b0bc074f7ecae48e8ece9e45ba2394",
+                "reference": "d6a722f703b0bc074f7ecae48e8ece9e45ba2394",
                 "shasum": ""
             },
             "require": {
@@ -210,7 +210,7 @@
                 }
             ],
             "description": "Bearer (OAuth) Authentication plugin for fkooman/rest",
-            "time": "2015-06-04 10:28:35"
+            "time": "2015-06-06 16:06:37"
         },
         {
             "name": "fkooman/rest-plugin-indieauth",

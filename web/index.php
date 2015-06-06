@@ -56,7 +56,12 @@ $bearerAuth = new BearerAuthentication(
         $iniReader->v('Introspection', 'endpoint'),
         $iniReader->v('Introspection', 'secret')
     ),
-    'Phubble'
+    array(
+        'realm' => 'Phubble',
+        'scope' => 'https://micropub.net/scope#create',
+        'authorization_endpoint' => 'https://as.indiecert.net/authorize',
+        'token_endpoint' => 'https://as.indiecert.net/token',
+    )
 );
 
 $pluginRegistry = new PluginRegistry();
