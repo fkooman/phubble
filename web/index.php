@@ -59,8 +59,8 @@ $bearerAuth = new BearerAuthentication(
     array(
         'realm' => 'Phubble',
         'scope' => 'https://micropub.net/scope#create',
-        'authorization_endpoint' => 'https://as.indiecert.net/authorize',
-        'token_endpoint' => 'https://as.indiecert.net/token',
+        'authorization_endpoint' => $iniReader->v('Discovery', 'authorization_endpoint'),
+        'token_endpoint' => $iniReader->v('Discovery', 'token_endpoint'),
     )
 );
 

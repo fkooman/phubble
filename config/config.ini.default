@@ -3,6 +3,10 @@
 
 ;webmentionEndpoint = 'https://www.tuxed.net/webmention/'
 
+[Discovery]
+authorize_endpoint = "https://indiecert.net/auth"
+token_endpoint = "https://indiecert.net/token"
+
 [Introspection]
 endpoint = "https://indiecert.net/introspect"
 ;endpoint = "https://tokens.indieauth.com/token"
