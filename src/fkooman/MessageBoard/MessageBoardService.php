@@ -26,11 +26,16 @@ use fkooman\Rest\Service;
 use GuzzleHttp\Client;
 use HTMLPurifier;
 use HTMLPurifier_Config;
+use fkooman\Http\Exception\ForbiddenException;
+use fkooman\Json\Json;
 
 class MessageBoardService extends Service
 {
     /** @var fkooman\RelMeAuth\PdoStorage */
     private $pdoStorage;
+
+    /** @var string */
+    private $aclFile;
 
     /** @var GuzzleHttp\Client */
     private $client;
@@ -41,11 +46,12 @@ class MessageBoardService extends Service
     /** @var fkooman\IndieCert\TemplateManager */
     private $templateManager;
 
-    public function __construct(PdoStorage $pdoStorage, TemplateManager $templateManager = null, Client $client = null, IO $io = null)
+    public function __construct(PdoStorage $pdoStorage, $aclFile, TemplateManager $templateManager = null, Client $client = null, IO $io = null)
     {
         parent::__construct();
 
         $this->pdoStorage = $pdoStorage;
+        $this->aclFile = $aclFile;
 
         if (null === $templateManager) {
             $templateManager = new TemplateManager();
@@ -163,9 +169,18 @@ class MessageBoardService extends Service
 
         $userId = null !== $indieInfo ? $indieInfo->getUserId() : null;
 
+        $canPost = false;
+        if (null !== $userId) {
+            $spaceAcl = $this->getSpaceAcl($space);
+            if (in_array($userId, $spaceAcl)) {
+                $canPost = true;
+            }
+        }
+
         return $this->templateManager->render(
             'messagesPage',
             array(
+                'can_post' => $canPost,
                 'space' => $space,
                 'page' => $page,
                 'messages' => $messages,
@@ -194,29 +209,40 @@ class MessageBoardService extends Service
         );
     }
 
-    public function deleteMessage(Request $request, IndieInfo $indieInfo, $space, $id)
+    public function deleteMessage(Request $request, IndieInfo $indieInfo, $spaceId, $messageId)
     {
-        // FIXME: validate $id!
-        $message = $this->pdoStorage->deleteMessage($space, $id);
+        $spaceAcl = $this->getSpaceAcl($spaceId);
+        $userId = $indieInfo->getUserId();
 
-        // FIXME: check if userid owns the post!
+        if (!in_array($userId, $spaceAcl)) {
+            throw new ForbiddenException('user not allowed to delete in this space');
+        }
 
-        return new RedirectResponse($request->getUrl()->getRootUrl().$space.'/', 302);
+        // FIXME: user needs to own the post!
+        $this->pdoStorage->deleteMessage($spaceId, $messageId);
+
+        return new RedirectResponse($request->getUrl()->getRootUrl().$spaceId.'/', 302);
     }
 
-    public function postMessage(Request $request, IndieInfo $indieInfo, $space)
+    public function postMessage(Request $request, IndieInfo $indieInfo, $spaceId)
     {
-        // FIXME: validate space
-        $authorId = $indieInfo->getUserId();
+        // check that user is owner of space before allowing post
+        $spaceAcl = $this->getSpaceAcl($spaceId);
+        $userId = $indieInfo->getUserId();
+
+        if (!in_array($userId, $spaceAcl)) {
+            throw new ForbiddenException('user not allowed to post in this space');
+        }
+
         $messageBody = $this->validateMessageBody($request->getPostParameter('message_body'));
 
         $postTime = $this->io->getTime();
         $messageId = $this->io->getRandomHex();
 
-        $this->pdoStorage->storeMessage($space, $messageId, $authorId, $messageBody, $postTime);
+        $this->pdoStorage->storeMessage($spaceId, $messageId, $userId, $messageBody, $postTime);
 
         $messageUrls = $this->extractUrls($messageBody);
-        $source = $request->getUrl()->getRootUrl().$space.'/'.$messageId;
+        $source = $request->getUrl()->getRootUrl().$spaceId.'/'.$messageId;
         foreach ($messageUrls as $u) {
             $this->sendWebmention($source, $u);
         }
@@ -245,6 +271,22 @@ class MessageBoardService extends Service
         // the URL is absolute
         // parse DOM, do not parse plain text, too complicated
         return array();
+    }
+
+    private function getSpaceAcl($spaceId)
+    {
+        $spaceOwner = $this->pdoStorage->getSpaceOwner($spaceId);
+
+        $spaceAcl = array();
+        $aclData = Json::decodeFile($this->aclFile);
+        if (array_key_exists($spaceId, $aclData)) {
+            $spaceAcl = $aclData[$spaceId];
+        }
+
+        // add the owner to it as well
+        $spaceAcl[] = $spaceOwner;
+
+        return $spaceAcl;
     }
 
     private function sendWebmention($source, $target)

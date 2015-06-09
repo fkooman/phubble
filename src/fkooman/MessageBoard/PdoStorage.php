@@ -50,11 +50,30 @@ class PdoStorage
         }
     }
 
+    public function getSpaceOwner($spaceId)
+    {
+        $stmt = $this->db->prepare(
+            sprintf(
+                'SELECT owner FROM %s WHERE id = :id',
+                $this->prefix.'spaces'
+            )
+        );
+        $stmt->bindValue(':id', $spaceId, PDO::PARAM_STR);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        // FIXME: returns empty array when no configurations or still false?
+        if (false !== $result) {
+            return $result['owner'];
+        }
+
+        return;
+    }
+
     public function getSpaces()
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT id  FROM %s',
+                'SELECT id FROM %s',
                 $this->prefix.'spaces'
             )
         );

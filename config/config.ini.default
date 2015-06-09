@@ -3,6 +3,9 @@
 
 ;webmentionEndpoint = 'https://www.tuxed.net/webmention/'
 
+[Acl]
+aclFile = "/etc/phubble/acl.json"
+
 [Discovery]
 authorize_endpoint = "https://indiecert.net/auth"
 token_endpoint = "https://indiecert.net/token"

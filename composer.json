@@ -16,6 +16,7 @@
     "require": {
         "ezyang/htmlpurifier": "~4.6",
         "fkooman/ini": "~0.2.0",
+        "fkooman/json": "~0.6.0",
         "fkooman/rest": "dev-develop",
         "fkooman/rest-plugin-bearer": "dev-develop",
         "fkooman/rest-plugin-indieauth": "dev-develop",

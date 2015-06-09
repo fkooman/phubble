@@ -15,6 +15,7 @@ account is called `fkooman` in group `fkooman`.
     $ sudo semanage fcontext -a -t httpd_sys_rw_content_t '/var/www/phubble/data(/.*)?'
     $ sudo restorecon -R /var/www/phubble/data
     $ cp config/config.ini.default config/config.ini
+    $ cp config/acl.json.example config/acl.json
 
 Now to initialize the database:
 

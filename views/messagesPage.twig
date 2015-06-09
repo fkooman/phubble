@@ -22,15 +22,19 @@
             </form>
         {% endif %}
 
-        {% if user_id %}
+        {% if user_id and can_post %}
         <form class="message" method="post">
             <textarea name="message_body" placeholder="Your Message..." required></textarea>
             <input type="submit" value="Post">
         </form>
         {% endif %}
 
-        {% if not messages %}
+        {% if not messages and can_post %}
             <p>No messages posted yet, be the first!</p>
+        {% endif %}
+
+        {% if not messages and not can_post %}
+            <p>No messages posted yet!</p>
         {% endif %}
 
         <div class="prevnext">

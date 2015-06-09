@@ -55,7 +55,9 @@ $templateManager->setGlobalVariables(
     )
 );
 
-$service = new MessageBoardService($pdoStorage, $templateManager);
+$aclFile = $iniReader->v('Acl', 'aclFile');
+
+$service = new MessageBoardService($pdoStorage, $aclFile, $templateManager);
 
 $bearerAuth = new BearerAuthentication(
     new IntrospectionBearerValidator(
