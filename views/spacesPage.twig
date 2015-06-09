@@ -31,17 +31,26 @@
 
         <h2>Public Spaces</h2>
 
-        {% if not spaces %}
-            <p>No spaces yet!</p>
+        {% if not publicSpaces %}
+            <p>No public spaces yet!</p>
         {% endif %}
 
         <ul>
-        {% for space in spaces %}
-            {% if not space.getSecret %}
+        {% for space in publicSpaces %}
             <li><a href="{{ space.getId }}/">{{ space.getId|e }}</a></li>
-            {% endif %}
         {% endfor %}
         </ul>
+
+        {% if indieInfo %}
+            {% if mySecretSpaces %}
+                <h2>Secret Spaces</h2>
+                <ul>
+                {% for space in mySecretSpaces %}
+                    <li><a href="{{ space.getId }}/">{{ space.getId|e }}</a></li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endif %}
 
         <div class="footer">
             <span class="pull-left">Phubble</span>

@@ -198,12 +198,25 @@ class PhubbleService extends Service
 
     public function getSpaces(Request $request, $indieInfo)
     {
-        $spaces = $this->db->getPublicSpaces();
+        $publicSpaces = $this->db->getPublicSpaces();
+        $secretSpaces = $this->db->getSecretSpaces();
+
+        $mySecretSpaces = array();
+        if (null !== $indieInfo) {
+            // only show secretSpaces that has us in the ACL
+            foreach ($secretSpaces as $s) {
+                $spaceAcl = $this->getSpaceAcl($s);
+                if (in_array($indieInfo->getUserId(), $spaceAcl)) {
+                    $mySecretSpaces[] = $s;
+                }
+            }
+        }
 
         return $this->templateManager->render(
             'spacesPage',
             array(
-                'spaces' => $spaces,
+                'publicSpaces' => $publicSpaces,
+                'mySecretSpaces' => $mySecretSpaces,
                 'indieInfo' => $indieInfo,
             )
         );

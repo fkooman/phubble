@@ -109,6 +109,25 @@ class PdoStorage
         return $spaces;
     }
 
+    public function getSecretSpaces()
+    {
+        $stmt = $this->db->prepare(
+            sprintf(
+                'SELECT id, owner, secret FROM %s WHERE secret',
+                $this->prefix.'spaces'
+            )
+        );
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $spaces = array();
+        foreach ($result as $r) {
+            $spaces[] = Space::fromArray($r);
+        }
+
+        return $spaces;
+    }
+
     public function addMessage(Message $message)
     {
         $stmt = $this->db->prepare(
