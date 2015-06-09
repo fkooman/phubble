@@ -8,65 +8,55 @@
   <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/normalize.css">
   <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/style.css">
 
-    <link rel="micropub" href="{{ rootUrl|e }}{{ space|e}}/_micropub">
+    <link rel="micropub" href="{{ rootUrl|e }}{{ space.getId|e}}/_micropub">
 </head>
 
 <body>
     <div id="container">
-        <a class="header" href="{{ root|e }}"><h1>Phubble - {{ space|e }}</h1></a>
+        <a class="header" href="{{ root|e }}"><h1>Phubble - {{ space.getId|e }}</h1></a>
 
-        {% if owner_id == user_id %}
+        {% if indieInfo and space.getOwner == indieInfo.getUserId %}
             <form method="get" action="_edit">
                 <input type="submit" value="Edit">
             </form>
         {% endif %}
 
-        {% if not user_id %}
+        {% if not indieInfo %}
             <form class="try" method="post" action="{{ rootUrl|e }}_indieauth/auth">
                 <span class="label">https://</span><input required type="text" name="me" placeholder="example.org">
                 <input type="submit" value="Sign In">
             </form>
         {% endif %}
 
-        {% if user_id and can_post %}
+        {% if indieInfo and canPost %}
         <form class="message" method="post">
             <textarea name="message_body" placeholder="Your Message..." required></textarea>
             <input type="submit" value="Post">
         </form>
         {% endif %}
 
-        {% if not messages and can_post %}
+        {% if not messages and canPost %}
             <p>No messages posted yet, be the first!</p>
         {% endif %}
 
-        {% if not messages and not can_post %}
+        {% if not messages and not canPost %}
             <p>No messages posted yet!</p>
         {% endif %}
-
-        <div class="prevnext">
-            {% if has_prev %}
-                <a class="btn pull-left" href="?p={{ page-1 }}">&lt;Newer</a>
-            {% endif %}
-
-            {% if has_next %}
-                <a class="btn pull-right" href="?p={{ page+1 }}">Older&gt;</a>
-            {% endif %}
-        </div>
 
         {% for message in messages %}
         <table class="message">
             <tr>
-            {% if message.author_id == user_id %}
+            {% if indieInfo and message.getAuthorId == indieInfo.getUserId %}
                 <th class="owner">
             {% else %}
                 <th>
             {% endif %}
-                    <a href="{{ message.author_id|e }}">{{ message.author_id|e }}</a>
-                    <span class="date"><a href="{{ message.id|e }}">{{ message.post_time|e|date }}</a></span>
+                    <a href="{{ message.getAuthorId|e }}">{{ message.getAuthorId|e }}</a>
+                    <span class="date"><a href="{{ message.getId|e }}">{{ message.getPostTime|e|date }}</a></span>
                 </th>
             </tr>
             <tr>
-                <td>{{ message.message_body|raw }}</td>
+                <td>{{ message.getMessageBody|raw }}</td>
             </tr>
         </table>
         {% endfor %}
@@ -74,8 +64,8 @@
         <div class="footer">
             <span class="pull-left">Phubble</span>
             <span class="pull-right">
-            {% if user_id %}
-                {{ user_id|e }} | <form method="post" action="{{ rootUrl|e}}_indieauth/logout"><input type="submit" value="Logout"></form>
+            {% if indieInfo %}
+                {{ indieInfo.getUserId|e }} | <form method="post" action="{{ rootUrl|e}}_indieauth/logout"><input type="submit" value="Logout"></form>
             {% endif %}
             </span>
         </div> <!-- /footer -->

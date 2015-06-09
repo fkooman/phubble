@@ -27,13 +27,12 @@ use GuzzleHttp\Client;
 use HTMLPurifier;
 use HTMLPurifier_Config;
 use fkooman\Http\Exception\ForbiddenException;
-use fkooman\Http\Exception\NotFoundException;
 use fkooman\Json\Json;
 
 class PhubbleService extends Service
 {
-    /** @var fkooman\RelMeAuth\PdoStorage */
-    private $pdoStorage;
+    /** @var fkooman\Phubble\PdoStorage */
+    private $db;
 
     /** @var string */
     private $aclFile;
@@ -47,11 +46,11 @@ class PhubbleService extends Service
     /** @var fkooman\IndieCert\TemplateManager */
     private $templateManager;
 
-    public function __construct(PdoStorage $pdoStorage, $aclFile, TemplateManager $templateManager = null, Client $client = null, IO $io = null)
+    public function __construct(PdoStorage $db, $aclFile, TemplateManager $templateManager = null, Client $client = null, IO $io = null)
     {
         parent::__construct();
 
-        $this->pdoStorage = $pdoStorage;
+        $this->db = $db;
         $this->aclFile = $aclFile;
 
         if (null === $templateManager) {
@@ -84,7 +83,7 @@ class PhubbleService extends Service
         $this->post(
             '/',
             function (Request $request, IndieInfo $indieInfo) {
-                return $this->postSpace($request, $indieInfo);
+                return $this->addSpace($request, $indieInfo);
             }
         );
 
@@ -152,126 +151,105 @@ class PhubbleService extends Service
         );
     }
 
-    public function postSpace(Request $request, $indieInfo)
+    public function addSpace(Request $request, $indieInfo)
     {
-        $spaceName = $request->getPostParameter('space');
+        $id = $request->getPostParameter('space');
+        $owner = $indieInfo->getUserId();
+        $space = new Space($id, $owner, false);
+        $this->db->addSpace($space);
 
-        $this->pdoStorage->createSpace($spaceName, $indieInfo->getUserId());
-
-        return new RedirectResponse($request->getUrl()->getRootUrl().$spaceName.'/', 302);
+        return new RedirectResponse($request->getUrl()->getRootUrl().$id.'/', 302);
     }
 
     public function getEditSpace(Request $request, IndieInfo $indieInfo, $spaceId)
     {
-        $spaceAcl = $this->getSpaceAcl($spaceId);
+        $space = $this->db->getSpace($spaceId);
         $userId = $indieInfo->getUserId();
 
-        if (!in_array($userId, $spaceAcl)) {
-            throw new ForbiddenException('user not allowed to edit this space');
+        if ($space->getOwner() !== $userId) {
+            throw new ForbiddenException('not allowed to edit this space');
         }
-
-        $spaceInfo = $this->pdoStorage->getSpaceInfo($spaceId);
 
         return $this->templateManager->render(
             'editSpacePage',
             array(
-                'space' => $spaceId,
-                'spaceInfo' => $spaceInfo,
-                'user_id' => $userId,
+                'space' => $space,
+                'indieInfo' => $indieInfo,
             )
         );
     }
 
     public function postEditSpace(Request $request, IndieInfo $indieInfo, $spaceId)
     {
-        $spaceAcl = $this->getSpaceAcl($spaceId);
+        $space = $this->db->getSpace($spaceId);
         $userId = $indieInfo->getUserId();
 
-        if (!in_array($userId, $spaceAcl)) {
-            throw new ForbiddenException('user not allowed to edit this space');
+        if ($space->getOwner() !== $userId) {
+            throw new ForbiddenException('not allowed to edit this space');
         }
 
-        $owner = $request->getPostParameter('owner');
-        $private = 'on' === $request->getPostParameter('private') ? true : false;
-        $this->pdoStorage->updateSpace($spaceId, $owner, $private);
+        $space->setOwner($request->getPostParameter('owner'));
+        $space->setSecret('on' === $request->getPostParameter('secret') ? true : false);
 
-        return new RedirectResponse($request->getUrl()->getRootUrl().$spaceId.'/', 302);
+        $this->db->updateSpace($space);
+
+        return new RedirectResponse($request->getUrl()->getRootUrl().$space->getId().'/', 302);
     }
 
     public function getSpaces(Request $request, $indieInfo)
     {
-        $userId = null !== $indieInfo ? $indieInfo->getUserId() : null;
-        $spaces = $this->pdoStorage->getSpaces();
+        $spaces = $this->db->getPublicSpaces();
 
         return $this->templateManager->render(
             'spacesPage',
             array(
                 'spaces' => $spaces,
-                'user_id' => $userId,
+                'indieInfo' => $indieInfo,
             )
         );
     }
 
-    public function getMessages(Request $request, $indieInfo, $space)
+    public function getMessages(Request $request, $indieInfo, $spaceId)
     {
-        $page = $request->getUrl()->getQueryParameter('p');
-
-        $spaceInfo = $this->pdoStorage->getSpaceInfo($space);
-
-        $messages = $this->pdoStorage->getMessages($space, $page);
-        $actualCount = count($messages);
-
-        $userId = null !== $indieInfo ? $indieInfo->getUserId() : null;
-
+        $space = $this->db->getSpace($spaceId);
+        $messages = $this->db->getMessages($space);
         $canPost = false;
-        if (null !== $userId) {
+        if (null !== $indieInfo) {
             $spaceAcl = $this->getSpaceAcl($space);
-            if (in_array($userId, $spaceAcl)) {
+            if (in_array($indieInfo->getUserId(), $spaceAcl)) {
                 $canPost = true;
             }
         }
 
-        // if private and cannot post then restricted!
-        if (1 == $spaceInfo['private'] && !$canPost) {
+        if ($space->getSecret() && !$canPost) {
             throw new ForbiddenException('no permission to access this space');
         }
 
         return $this->templateManager->render(
             'messagesPage',
             array(
-                'owner_id' => $spaceInfo['owner'],
-                'can_post' => $canPost,
+                'canPost' => $canPost,
                 'space' => $space,
-                'page' => $page,
                 'messages' => $messages,
-                'has_prev' => $page > 0,
-                'has_next' => $actualCount === 50,
-                'user_id' => $userId,
+                'indieInfo' => $indieInfo,
             )
         );
     }
 
-    public function getMessage(Request $request, $indieInfo, $space, $id)
+    public function getMessage(Request $request, $indieInfo, $spaceId, $id)
     {
-        $message = $this->pdoStorage->getMessage($space, $id);
-        if (false === $message) {
-            throw new NotFoundException('message not found');
-        }
-
-        $userId = null !== $indieInfo ? $indieInfo->getUserId() : null;
+        $space = $this->db->getSpace($spaceId);
+        $message = $this->db->getMessage($space, $id);
 
         $canPost = false;
-        if (null !== $userId) {
+        if (null !== $indieInfo) {
             $spaceAcl = $this->getSpaceAcl($space);
-            if (in_array($userId, $spaceAcl)) {
+            if (in_array($indieInfo->getUserId(), $spaceAcl)) {
                 $canPost = true;
             }
         }
 
-        $spaceInfo = $this->pdoStorage->getSpaceInfo($space);
-
-        // if private and cannot post then restricted!
-        if (1 == $spaceInfo['private'] && !$canPost) {
+        if ($space->getSecret() && !$canPost) {
             throw new ForbiddenException('no permission to access this post');
         }
 
@@ -282,7 +260,7 @@ class PhubbleService extends Service
                 array(
                     'space' => $space,
                     'message' => $message,
-                    'user_id' => $userId,
+                    'indieInfo' => $indieInfo,
                 )
             )
         );
@@ -290,102 +268,82 @@ class PhubbleService extends Service
         return $response;
     }
 
-    public function deleteMessage(Request $request, IndieInfo $indieInfo, $spaceId, $messageId)
+    public function deleteMessage(Request $request, IndieInfo $indieInfo, $spaceId, $id)
     {
-        $spaceAcl = $this->getSpaceAcl($spaceId);
+        $space = $this->db->getSpace($spaceId);
+        $spaceAcl = $this->getSpaceAcl($space);
         $userId = $indieInfo->getUserId();
 
         if (!in_array($userId, $spaceAcl)) {
-            throw new ForbiddenException('user not allowed to delete in this space');
+            throw new ForbiddenException('not allowed to delete this message');
         }
 
-        // FIXME: user needs to own the post!
-        $this->pdoStorage->deleteMessage($spaceId, $messageId);
+        $message = $this->db->getMessage($space, $id);
+        if ($message->getAuthorId() !== $userId) {
+            throw new ForbiddenException('not allowed to delete this message');
+        }
 
-        return new RedirectResponse($request->getUrl()->getRootUrl().$spaceId.'/', 302);
+        $this->db->deleteMessage($message);
+
+        return new RedirectResponse($request->getUrl()->getRootUrl().$space->getId().'/', 302);
     }
 
     public function postMessage(Request $request, IndieInfo $indieInfo, $spaceId)
     {
-        // FIXME: the space MUST exist!
-
-        // check that user is owner of space before allowing post
-        $spaceAcl = $this->getSpaceAcl($spaceId);
+        $space = $this->db->getSpace($spaceId);
+        $spaceAcl = $this->getSpaceAcl($space);
         $userId = $indieInfo->getUserId();
 
         if (!in_array($userId, $spaceAcl)) {
-            throw new ForbiddenException('user not allowed to post in this space');
+            throw new ForbiddenException('not allowed to delete this message');
         }
 
+        $id = $this->io->getRandomHex();
+        $postTime = $this->io->getTime();
         $messageBody = $this->validateMessageBody($request->getPostParameter('message_body'));
 
-        $postTime = $this->io->getTime();
-        $messageId = $this->io->getRandomHex();
-
-        $this->pdoStorage->storeMessage($spaceId, $messageId, $userId, $messageBody, $postTime);
-
-        $messageUrls = $this->extractUrls($messageBody);
-        $source = $request->getUrl()->getRootUrl().$spaceId.'/'.$messageId;
-        foreach ($messageUrls as $u) {
-            $this->sendWebmention($source, $u);
-        }
+        $message = new Message($space, $id, $userId, $messageBody, $postTime);
+        $this->db->addMessage($message);
 
         return new RedirectResponse($request->getUrl()->toString(), 302);
     }
 
     public function micropubMessage(Request $request, TokenInfo $tokenInfo, $spaceId)
     {
-        // FIXME: the space MUST exist!
-
-        $spaceAcl = $this->getSpaceAcl($spaceId);
+        $space = $this->db->getSpace($spaceId);
+        $spaceAcl = $this->getSpaceAcl($space);
         $userId = $tokenInfo->get('sub');
 
         if (!in_array($userId, $spaceAcl)) {
             throw new ForbiddenException('user not allowed to post in this space');
         }
 
+        $id = $this->io->getRandomHex();
         $messageBody = $this->validateMessageBody($request->getPostParameter('content'));
         $postTime = $this->io->getTime();
-        $messageId = $this->io->getRandomHex();
 
-        $this->pdoStorage->storeMessage($spaceId, $messageId, $userId, $messageBody, $postTime);
+        $message = new Message($space, $id, $userId, $messageBody, $postTime);
+
+        $this->db->addMessage($message);
 
         $response = new Response(201);
-        $response->setHeader('Location', $request->getUrl()->getRootUrl().$spaceId.'/'.$messageId);
+        $response->setHeader('Location', $request->getUrl()->getRootUrl().$space->getId().'/'.$message->getId());
 
         return $response;
     }
 
-    private function extractUrls($messageBody)
+    private function getSpaceAcl(Space $space)
     {
-        // find all {a,link} href on a page and send webmentions to them if
-        // the URL is absolute
-        // parse DOM, do not parse plain text, too complicated
-        return array();
-    }
-
-    private function getSpaceAcl($spaceId)
-    {
-        $spaceInfo = $this->pdoStorage->getSpaceInfo($spaceId);
-        $spaceOwner = $spaceInfo['owner'];
-
         $spaceAcl = array();
         $aclData = Json::decodeFile($this->aclFile);
-        if (array_key_exists($spaceId, $aclData)) {
-            $spaceAcl = $aclData[$spaceId];
+        if (array_key_exists($space->getId(), $aclData)) {
+            $spaceAcl = $aclData[$space->getId()];
         }
 
         // add the owner to it as well
-        $spaceAcl[] = $spaceOwner;
+        $spaceAcl[] = $space->getOwner();
 
         return $spaceAcl;
-    }
-
-    private function sendWebmention($source, $target)
-    {
-        // send a webmention to the target that we mentioned them
-        // check the link header, or the page content for the webmention
-        // endpoint, mention it...
     }
 
     private function validateMessageBody($messageBody)

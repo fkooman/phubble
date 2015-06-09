@@ -13,14 +13,14 @@
     <div id="container">
         <a class="header" href="{{ root|e }}"><h1>Phubble</h1></a>
 
-        {% if not user_id %}
+        {% if not indieInfo %}
             <form class="try" method="post" action="{{ rootUrl|e }}_indieauth/auth">
                 <span class="label">https://</span><input required type="text" name="me" placeholder="example.org">
                 <input type="submit" value="Sign In">
             </form>
         {% endif %}
 
-        {% if user_id %}
+        {% if indieInfo %}
         <h2>Create Space</h2>
 
         <form method="post" action="">
@@ -37,17 +37,17 @@
 
         <ul>
         {% for space in spaces %}
-            {% if not space.private %}
-            <li><a href="{{ space.id }}/">{{ space.id|e }}</a></li>
+            {% if not space.getSecret %}
+            <li><a href="{{ space.getId }}/">{{ space.getId|e }}</a></li>
             {% endif %}
         {% endfor %}
         </ul>
 
         <div class="footer">
             <span class="pull-left">Phubble</span>
-            {% if user_id %}
+            {% if indieInfo %}
             <span class="pull-right">
-                {{ user_id|e }} | <form method="post" action="{{ rootUrl|e }}_indieauth/logout"><input type="submit" value="Logout"></form>
+                {{ indieInfo.getUserId|e }} | <form method="post" action="{{ rootUrl|e }}_indieauth/logout"><input type="submit" value="Logout"></form>
             </span>
             {% endif %}
         </div> <!-- /footer -->
