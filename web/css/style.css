@@ -46,6 +46,15 @@ input[type=text], textarea {
     border: 1px solid #d5d5d5;
 }
 
+form.editSpace input[type="text"], form.editSpace input[type="submit"] {
+    display: block;
+    margin: 0 0 1em 0;
+}
+
+form.editSpace input[type="submit"] {
+    margin: 1em 0;
+}
+    
 form.try {
     text-align: center;
     padding: 1em;

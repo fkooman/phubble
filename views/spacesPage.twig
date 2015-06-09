@@ -37,7 +37,9 @@
 
         <ul>
         {% for space in spaces %}
+            {% if not space.private %}
             <li><a href="{{ space.id }}/">{{ space.id|e }}</a></li>
+            {% endif %}
         {% endfor %}
         </ul>
 

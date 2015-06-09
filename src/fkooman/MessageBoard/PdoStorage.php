@@ -37,12 +37,13 @@ class PdoStorage
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'INSERT INTO %s (id, owner) VALUES(:id, :owner)',
+                'INSERT INTO %s (id, owner, private) VALUES(:id, :owner, :private)',
                 $this->prefix.'spaces'
             )
         );
         $stmt->bindValue(':id', $id, PDO::PARAM_STR);
         $stmt->bindValue(':owner', $owner, PDO::PARAM_STR);
+        $stmt->bindValue(':private', false, PDO::PARAM_BOOL);
         $stmt->execute();
 
         if (1 !== $stmt->rowCount()) {
@@ -50,11 +51,29 @@ class PdoStorage
         }
     }
 
-    public function getSpaceOwner($spaceId)
+    public function updateSpace($spaceId, $owner, $private)
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT owner FROM %s WHERE id = :id',
+                'UPDATE %s SET owner = :owner, private = :private WHERE id = :id',
+                $this->prefix.'spaces'
+            )
+        );
+        $stmt->bindValue(':id', $spaceId, PDO::PARAM_STR);
+        $stmt->bindValue(':owner', $owner, PDO::PARAM_STR);
+        $stmt->bindValue(':private', $private, PDO::PARAM_BOOL);
+        $stmt->execute();
+
+        if (1 !== $stmt->rowCount()) {
+            throw new RuntimeException('unable to update');
+        }
+    }
+
+    public function getSpaceInfo($spaceId)
+    {
+        $stmt = $this->db->prepare(
+            sprintf(
+                'SELECT * FROM %s WHERE id = :id',
                 $this->prefix.'spaces'
             )
         );
@@ -63,17 +82,17 @@ class PdoStorage
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         // FIXME: returns empty array when no configurations or still false?
         if (false !== $result) {
-            return $result['owner'];
+            return $result;
         }
 
-        return;
+        return false;
     }
 
     public function getSpaces()
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT id FROM %s',
+                'SELECT * FROM %s',
                 $this->prefix.'spaces'
             )
         );
@@ -105,27 +124,6 @@ class PdoStorage
         if (1 !== $stmt->rowCount()) {
             throw new PdoStorageException('unable to add');
         }
-    }
-
-    public function getMentions($spaceId, $messageId)
-    {
-        $stmt = $this->db->prepare(
-            sprintf(
-                'SELECT source, time FROM %s WHERE space_id = :space_id AND id = :id ORDER BY time DESC',
-                $this->prefix.'mentions'
-            )
-        );
-        $stmt->bindValue(':space_id', $spaceId, PDO::PARAM_STR);
-        $stmt->bindValue(':id', $messageId, PDO::PARAM_STR);
-
-        $stmt->execute();
-        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        // FIXME: returns empty array when no configurations or still false?
-        if (false !== $result) {
-            return $result;
-        }
-
-        return array();
     }
 
     public function getMessage($spaceId, $messageId)
@@ -166,8 +164,7 @@ class PdoStorage
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT me.id, me.author_id, me.message_body, me.post_time, (SELECT COUNT(*) FROM %s mn WHERE me.id = mn.id) AS mention_count FROM %s me WHERE space_id = :space_id ORDER BY post_time DESC LIMIT %d,50',
-                $this->prefix.'mentions',
+                'SELECT * FROM %s WHERE space_id = :space_id ORDER BY post_time DESC LIMIT %d,50',
                 $this->prefix.'messages',
                 intval($page) * 50
             )
@@ -191,6 +188,7 @@ class PdoStorage
             'CREATE TABLE IF NOT EXISTS %s (
                 id VARCHAR(64) NOT NULL,
                 owner VARCHAR(255) NOT NULL,
+                private BOOLEAN NOT NULL,
                 PRIMARY KEY (id)
             )',
             $prefix.'spaces'
@@ -203,20 +201,10 @@ class PdoStorage
                 author_id VARCHAR(255) NOT NULL,
                 message_body VARCHAR(255) NOT NULL,
                 post_time INT NOT NULL,
-                PRIMARY KEY (id)
+                PRIMARY KEY (id),
+                FOREIGN KEY (space_id) REFERENCES spaces(id)
             )',
             $prefix.'messages'
-        );
-
-        $query[] = sprintf(
-            'CREATE TABLE IF NOT EXISTS %s (
-                id VARCHAR(64) NOT NULL,
-                space_id VARCHAR(64) NOT NULL,
-                source VARCHAR(255) NOT NULL,
-                time INT NOT NULL,
-                UNIQUE (id, source)
-            )',
-            $prefix.'mentions'
         );
 
         return $query;
@@ -229,7 +217,7 @@ class PdoStorage
             $this->db->query($q);
         }
 
-        $tables = array('messages', 'mentions');
+        $tables = array('spaces', 'messages');
         foreach ($tables as $t) {
             // make sure the tables are empty
             $this->db->query(

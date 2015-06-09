@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Message Board</title>
+
+  <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/style.css">
+
+  <link rel="micropub" href="{{ rootUrl|e }}{{ space|e}}/_micropub">
+</head>
+
+<body>
+    <div id="container">
+        <a class="header" href="{{ root|e }}"><h1>Phubble - {{ space|e }}</h1></a>
+
+        <form class="editSpace" method="post" action="">
+            <label for="owner">Owner</label><input id="owner" type="text" name="owner" value="{{ spaceInfo.owner|e }}">
+            <input id="private" name="private" type="checkbox"><label for="private">Private</label>
+            <input type="submit" value="Save">
+        </form>
+
+        <div class="footer">
+            <span class="pull-left">Phubble</span>
+            <span class="pull-right">
+            {% if user_id %}
+                {{ user_id|e }} | <form method="post" action="{{ rootUrl|e}}_indieauth/logout"><input type="submit" value="Logout"></form>
+            {% endif %}
+            </span>
+        </div> <!-- /footer -->
+
+    </div> <!-- /container -->
+</body>
+</html>

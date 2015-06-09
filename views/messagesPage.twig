@@ -15,6 +15,12 @@
     <div id="container">
         <a class="header" href="{{ root|e }}"><h1>Phubble - {{ space|e }}</h1></a>
 
+        {% if owner_id == user_id %}
+            <form method="get" action="_edit">
+                <input type="submit" value="Edit">
+            </form>
+        {% endif %}
+
         {% if not user_id %}
             <form class="try" method="post" action="{{ rootUrl|e }}_indieauth/auth">
                 <span class="label">https://</span><input required type="text" name="me" placeholder="example.org">
@@ -62,9 +68,6 @@
             <tr>
                 <td>{{ message.message_body|raw }}</td>
             </tr>
-            {% if message.mention_count %}
-            <tr><td><span class="mention_count">{{message.mention_count|e}} mention(s)</span></td></tr>
-            {% endif %}
         </table>
         {% endfor %}
 

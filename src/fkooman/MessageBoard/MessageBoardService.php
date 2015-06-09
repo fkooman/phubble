@@ -101,6 +101,20 @@ class MessageBoardService extends Service
         );
 
         $this->get(
+            '/:space/_edit',
+            function (Request $request, IndieInfo $indieInfo, $space) {
+                return $this->getEditSpace($request, $indieInfo, $space);
+            }
+        );
+
+        $this->post(
+            '/:space/_edit',
+            function (Request $request, IndieInfo $indieInfo, $space) {
+                return $this->postEditSpace($request, $indieInfo, $space);
+            }
+        );
+
+        $this->get(
             '/:space/:id',
             function (Request $request, IndieInfo $indieInfo = null, $space, $id) {
                 return $this->getMessage($request, $indieInfo, $space, $id);
@@ -147,6 +161,43 @@ class MessageBoardService extends Service
         return new RedirectResponse($request->getUrl()->getRootUrl().$spaceName.'/', 302);
     }
 
+    public function getEditSpace(Request $request, IndieInfo $indieInfo, $spaceId)
+    {
+        $spaceAcl = $this->getSpaceAcl($spaceId);
+        $userId = $indieInfo->getUserId();
+
+        if (!in_array($userId, $spaceAcl)) {
+            throw new ForbiddenException('user not allowed to edit this space');
+        }
+
+        $spaceInfo = $this->pdoStorage->getSpaceInfo($spaceId);
+
+        return $this->templateManager->render(
+            'editSpacePage',
+            array(
+                'space' => $spaceId,
+                'spaceInfo' => $spaceInfo,
+                'user_id' => $userId,
+            )
+        );
+    }
+
+    public function postEditSpace(Request $request, IndieInfo $indieInfo, $spaceId)
+    {
+        $spaceAcl = $this->getSpaceAcl($spaceId);
+        $userId = $indieInfo->getUserId();
+
+        if (!in_array($userId, $spaceAcl)) {
+            throw new ForbiddenException('user not allowed to edit this space');
+        }
+
+        $owner = $request->getPostParameter('owner');
+        $private = 'on' === $request->getPostParameter('private') ? true : false;
+        $this->pdoStorage->updateSpace($spaceId, $owner, $private);
+
+        return new RedirectResponse($request->getUrl()->getRootUrl().$spaceId.'/', 302);
+    }
+
     public function getSpaces(Request $request, $indieInfo)
     {
         $userId = null !== $indieInfo ? $indieInfo->getUserId() : null;
@@ -165,6 +216,8 @@ class MessageBoardService extends Service
     {
         $page = $request->getUrl()->getQueryParameter('p');
 
+        $spaceInfo = $this->pdoStorage->getSpaceInfo($space);
+
         $messages = $this->pdoStorage->getMessages($space, $page);
         $actualCount = count($messages);
 
@@ -178,9 +231,15 @@ class MessageBoardService extends Service
             }
         }
 
+        // if private and cannot post then restricted!
+        if (1 == $spaceInfo['private'] && !$canPost) {
+            throw new ForbiddenException('no permission to access this space');
+        }
+
         return $this->templateManager->render(
             'messagesPage',
             array(
+                'owner_id' => $spaceInfo['owner'],
                 'can_post' => $canPost,
                 'space' => $space,
                 'page' => $page,
@@ -194,14 +253,27 @@ class MessageBoardService extends Service
 
     public function getMessage(Request $request, $indieInfo, $space, $id)
     {
-        // FIXME: validate $id!
         $message = $this->pdoStorage->getMessage($space, $id);
         if (false === $message) {
             throw new NotFoundException('message not found');
         }
 
-        $mentions = $this->pdoStorage->getMentions($space, $id);
         $userId = null !== $indieInfo ? $indieInfo->getUserId() : null;
+
+        $canPost = false;
+        if (null !== $userId) {
+            $spaceAcl = $this->getSpaceAcl($space);
+            if (in_array($userId, $spaceAcl)) {
+                $canPost = true;
+            }
+        }
+
+        $spaceInfo = $this->pdoStorage->getSpaceInfo($space);
+
+        // if private and cannot post then restricted!
+        if (1 == $spaceInfo['private'] && !$canPost) {
+            throw new ForbiddenException('no permission to access this post');
+        }
 
         $response = new Response();
         $response->setBody(
@@ -210,7 +282,6 @@ class MessageBoardService extends Service
                 array(
                     'space' => $space,
                     'message' => $message,
-                    'mentions' => $mentions,
                     'user_id' => $userId,
                 )
             )
@@ -295,7 +366,8 @@ class MessageBoardService extends Service
 
     private function getSpaceAcl($spaceId)
     {
-        $spaceOwner = $this->pdoStorage->getSpaceOwner($spaceId);
+        $spaceInfo = $this->pdoStorage->getSpaceInfo($spaceId);
+        $spaceOwner = $spaceInfo['owner'];
 
         $spaceAcl = array();
         $aclData = Json::decodeFile($this->aclFile);
