@@ -145,7 +145,7 @@ class PdoStorage
             return $result;
         }
 
-        return;
+        return false;
     }
 
     public function deleteMessage($spaceId, $messageId)

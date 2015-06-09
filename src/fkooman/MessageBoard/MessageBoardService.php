@@ -27,6 +27,7 @@ use GuzzleHttp\Client;
 use HTMLPurifier;
 use HTMLPurifier_Config;
 use fkooman\Http\Exception\ForbiddenException;
+use fkooman\Http\Exception\NotFoundException;
 use fkooman\Json\Json;
 
 class MessageBoardService extends Service
@@ -126,7 +127,7 @@ class MessageBoardService extends Service
         );
 
         $this->post(
-            '/:space/micropub',
+            '/:space/_micropub',
             function (Request $request, TokenInfo $tokenInfo, $space) {
                 return $this->micropubMessage($request, $tokenInfo, $space);
             },
@@ -195,6 +196,10 @@ class MessageBoardService extends Service
     {
         // FIXME: validate $id!
         $message = $this->pdoStorage->getMessage($space, $id);
+        if (false === $message) {
+            throw new NotFoundException('message not found');
+        }
+
         $mentions = $this->pdoStorage->getMentions($space, $id);
         $userId = null !== $indieInfo ? $indieInfo->getUserId() : null;
 
@@ -226,6 +231,8 @@ class MessageBoardService extends Service
 
     public function postMessage(Request $request, IndieInfo $indieInfo, $spaceId)
     {
+        // FIXME: the space MUST exist!
+
         // check that user is owner of space before allowing post
         $spaceAcl = $this->getSpaceAcl($spaceId);
         $userId = $indieInfo->getUserId();
@@ -250,17 +257,25 @@ class MessageBoardService extends Service
         return new RedirectResponse($request->getUrl()->toString(), 302);
     }
 
-    public function micropubMessage(Request $request, TokenInfo $tokenInfo, $space)
+    public function micropubMessage(Request $request, TokenInfo $tokenInfo, $spaceId)
     {
-        $authorId = $tokenInfo->get('sub');
+        // FIXME: the space MUST exist!
+
+        $spaceAcl = $this->getSpaceAcl($spaceId);
+        $userId = $tokenInfo->get('sub');
+
+        if (!in_array($userId, $spaceAcl)) {
+            throw new ForbiddenException('user not allowed to post in this space');
+        }
+
         $messageBody = $this->validateMessageBody($request->getPostParameter('content'));
         $postTime = $this->io->getTime();
         $messageId = $this->io->getRandomHex();
 
-        $this->pdoStorage->storeMessage($space, $messageId, $authorId, $messageBody, $postTime);
+        $this->pdoStorage->storeMessage($spaceId, $messageId, $userId, $messageBody, $postTime);
 
         $response = new Response(201);
-        $response->setHeader('Location', $request->getUrl()->getRootUrl().$space.'/'.$messageId);
+        $response->setHeader('Location', $request->getUrl()->getRootUrl().$spaceId.'/'.$messageId);
 
         return $response;
     }
