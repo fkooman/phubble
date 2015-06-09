@@ -88,18 +88,6 @@ class MessageBoardService extends Service
             }
         );
 
-        $this->post(
-            '/_webmention',
-            function (Request $request) {
-                return $this->handleWebmention($request);
-            },
-            array(
-                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
-                    'requireAuth' => false,
-                ),
-            )
-        );
-
         $this->get(
             '/:space/',
             function (Request $request, IndieInfo $indieInfo = null, $space) {
@@ -148,11 +136,6 @@ class MessageBoardService extends Service
                 'fkooman\Rest\Plugin\Bearer\BearerAuthentication' => array('enabled' => true),
             )
         );
-    }
-
-    public function handleWebmention(Request $request)
-    {
-        return 'NOP';
     }
 
     public function postSpace(Request $request, $indieInfo)
@@ -232,7 +215,6 @@ class MessageBoardService extends Service
                 )
             )
         );
-        $response->setHeader('Link', sprintf('<%s>; rel="webmention"', $request->getUrl()->getRootUrl().'_webmention'));
 
         return $response;
     }
