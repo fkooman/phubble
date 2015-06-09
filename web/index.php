@@ -41,8 +41,6 @@ $pdo = new PDO(
 );
 $pdoStorage = new PdoStorage($pdo);
 
-$webmentionEndpoint = $iniReader->v('webmentionEndpoint', false, false);
-
 $request = new Request($_SERVER);
 
 $templateManager = new TemplateManager($iniReader->v('templateCache', false, null));
@@ -51,7 +49,6 @@ $templateManager->setGlobalVariables(
         'root' => $request->getUrl()->getRoot(),
         'rootFolder' => $request->getUrl()->getRootFolder(),
         'rootUrl' => $request->getUrl()->getRootUrl(),
-        'webmentionEndpoint' => $webmentionEndpoint,
     )
 );
 
@@ -78,18 +75,4 @@ $pluginRegistry->registerDefaultPlugin(
 );
 $pluginRegistry->registerOptionalPlugin($bearerAuth);
 $service->setPluginRegistry($pluginRegistry);
-
-$response = $service->run();
-
-// add Webmention response header if webmentionEndpoint is set in config
-$webmentionEndpoint = $iniReader->v('webmentionEndpoint', false, false);
-if (false !== $webmentionEndpoint) {
-    $response->setHeader(
-        'Link',
-        sprintf(
-            '<%s>; rel="webmention"',
-            $webmentionEndpoint
-        )
-    );
-}
-$response->send($request);
+$service->run($request)->send();

@@ -6,14 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Message Board</title>
 
-  {% if webmentionEndpoint %}
-  <link rel="webmention" href="{{ webmentionEndpoint|e }}">
-  {% endif %}
-
   <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/normalize.css">
   <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/style.css">
 
   <link rel="micropub" href="{{ rootUrl|e }}{{ space|e}}/_micropub">
+  <link rel="webmention" href="{{ rootUrl|e}}_webmention">
 </head>
 
 <body>
