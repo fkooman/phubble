@@ -17,12 +17,12 @@
 require_once dirname(__DIR__).'/vendor/autoload.php';
 
 use fkooman\Ini\IniReader;
-use fkooman\MessageBoard\MessageBoardService;
+use fkooman\Phubble\PhubbleService;
 use fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication;
 use fkooman\Rest\Plugin\Bearer\BearerAuthentication;
 use fkooman\Rest\Plugin\Bearer\IntrospectionBearerValidator;
-use fkooman\MessageBoard\PdoStorage;
-use fkooman\MessageBoard\TemplateManager;
+use fkooman\Phubble\PdoStorage;
+use fkooman\Phubble\TemplateManager;
 use fkooman\Rest\ExceptionHandler;
 use fkooman\Rest\PluginRegistry;
 use fkooman\Http\Request;
@@ -54,7 +54,7 @@ $templateManager->setGlobalVariables(
 
 $aclFile = $iniReader->v('Acl', 'aclFile');
 
-$service = new MessageBoardService($pdoStorage, $aclFile, $templateManager);
+$service = new PhubbleService($pdoStorage, $aclFile, $templateManager);
 
 $bearerAuth = new BearerAuthentication(
     new IntrospectionBearerValidator(

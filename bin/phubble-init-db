@@ -4,7 +4,7 @@
 require_once dirname(__DIR__).'/vendor/autoload.php';
 
 use fkooman\Ini\IniReader;
-use fkooman\MessageBoard\PdoStorage;
+use fkooman\Phubble\PdoStorage;
 
 try {
     $config = IniReader::fromFile(dirname(__DIR__).'/config/config.ini');

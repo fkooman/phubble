@@ -7,7 +7,7 @@
     ],
     "autoload": {
         "psr-0": {
-            "fkooman\\MessageBoard": "src/"
+            "fkooman\\Phubble\\": "src/"
         }
     },
     "description": "A simple PHP message board",

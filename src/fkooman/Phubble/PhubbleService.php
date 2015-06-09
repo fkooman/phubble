@@ -14,7 +14,7 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-namespace fkooman\MessageBoard;
+namespace fkooman\Phubble;
 
 use fkooman\Http\Exception\BadRequestException;
 use fkooman\Http\RedirectResponse;
@@ -30,7 +30,7 @@ use fkooman\Http\Exception\ForbiddenException;
 use fkooman\Http\Exception\NotFoundException;
 use fkooman\Json\Json;
 
-class MessageBoardService extends Service
+class PhubbleService extends Service
 {
     /** @var fkooman\RelMeAuth\PdoStorage */
     private $pdoStorage;
