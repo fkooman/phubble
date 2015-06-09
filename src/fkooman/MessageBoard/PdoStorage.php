@@ -33,15 +33,51 @@ class PdoStorage
         $this->prefix = $prefix;
     }
 
-    public function storeMessage($id, $authorId, $messageBody, $postTime)
+    public function createSpace($id, $owner)
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'INSERT INTO %s (id, author_id, message_body, post_time) VALUES(:id, :author_id, :message_body, :post_time)',
-                $this->prefix.'messages'
+                'INSERT INTO %s (id, owner) VALUES(:id, :owner)',
+                $this->prefix.'spaces'
             )
         );
         $stmt->bindValue(':id', $id, PDO::PARAM_STR);
+        $stmt->bindValue(':owner', $owner, PDO::PARAM_STR);
+        $stmt->execute();
+
+        if (1 !== $stmt->rowCount()) {
+            throw new RuntimeException('unable to add');
+        }
+    }
+
+    public function getSpaces()
+    {
+        $stmt = $this->db->prepare(
+            sprintf(
+                'SELECT id  FROM %s',
+                $this->prefix.'spaces'
+            )
+        );
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // FIXME: returns empty array when no configurations or still false?
+        if (false !== $result) {
+            return $result;
+        }
+
+        return;
+    }
+
+    public function storeMessage($spaceId, $messageId, $authorId, $messageBody, $postTime)
+    {
+        $stmt = $this->db->prepare(
+            sprintf(
+                'INSERT INTO %s (space_id, id, author_id, message_body, post_time) VALUES(:space_id, :id, :author_id, :message_body, :post_time)',
+                $this->prefix.'messages'
+            )
+        );
+        $stmt->bindValue(':space_id', $spaceId, PDO::PARAM_STR);
+        $stmt->bindValue(':id', $messageId, PDO::PARAM_STR);
         $stmt->bindValue(':author_id', $authorId, PDO::PARAM_STR);
         $stmt->bindValue(':message_body', $messageBody, PDO::PARAM_STR);
         $stmt->bindValue(':post_time', $postTime, PDO::PARAM_INT);
@@ -52,15 +88,16 @@ class PdoStorage
         }
     }
 
-    public function getMentions($id)
+    public function getMentions($spaceId, $messageId)
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT source, time FROM %s WHERE id = :id ORDER BY time DESC',
+                'SELECT source, time FROM %s WHERE space_id = :space_id AND id = :id ORDER BY time DESC',
                 $this->prefix.'mentions'
             )
         );
-        $stmt->bindValue(':id', $id, PDO::PARAM_STR);
+        $stmt->bindValue(':space_id', $spaceId, PDO::PARAM_STR);
+        $stmt->bindValue(':id', $messageId, PDO::PARAM_STR);
 
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -72,15 +109,16 @@ class PdoStorage
         return array();
     }
 
-    public function getMessage($id)
+    public function getMessage($spaceId, $messageId)
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT id, author_id, message_body, post_time FROM %s WHERE id = :id',
+                'SELECT id, author_id, message_body, post_time FROM %s WHERE space_id = :space_id AND id = :id',
                 $this->prefix.'messages'
             )
         );
-        $stmt->bindValue(':id', $id, PDO::PARAM_STR);
+        $stmt->bindValue(':space_id', $spaceId, PDO::PARAM_STR);
+        $stmt->bindValue(':id', $messageId, PDO::PARAM_STR);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         // FIXME: returns empty array when no configurations or still false?
@@ -91,30 +129,31 @@ class PdoStorage
         return;
     }
 
-    public function deleteMessage($id)
+    public function deleteMessage($spaceId, $messageId)
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'DELETE FROM %s WHERE id = :id',
+                'DELETE FROM %s WHERE space_id = :space_id AND id = :id',
                 $this->prefix.'messages'
             )
         );
-        $stmt->bindValue(':id', $id, PDO::PARAM_STR);
+        $stmt->bindValue(':space_id', $spaceId, PDO::PARAM_STR);
+        $stmt->bindValue(':id', $messageId, PDO::PARAM_STR);
         // FIXME: figure out return values...
         return $stmt->execute();
     }
 
-    public function getMessages($page)
+    public function getMessages($spaceId, $page)
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT me.id, me.author_id, me.message_body, me.post_time, (SELECT COUNT(*) FROM %s mn WHERE me.id = mn.id) AS mention_count FROM %s me ORDER BY post_time DESC LIMIT %d,50',
+                'SELECT me.id, me.author_id, me.message_body, me.post_time, (SELECT COUNT(*) FROM %s mn WHERE me.id = mn.id) AS mention_count FROM %s me WHERE space_id = :space_id ORDER BY post_time DESC LIMIT %d,50',
                 $this->prefix.'mentions',
                 $this->prefix.'messages',
                 intval($page) * 50
             )
         );
-
+        $stmt->bindValue(':space_id', $spaceId, PDO::PARAM_STR);
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         // FIXME: returns empty array when no configurations or still false?
@@ -132,6 +171,16 @@ class PdoStorage
         $query[] = sprintf(
             'CREATE TABLE IF NOT EXISTS %s (
                 id VARCHAR(64) NOT NULL,
+                owner VARCHAR(255) NOT NULL,
+                PRIMARY KEY (id)
+            )',
+            $prefix.'spaces'
+        );
+
+        $query[] = sprintf(
+            'CREATE TABLE IF NOT EXISTS %s (
+                id VARCHAR(64) NOT NULL,
+                space_id VARCHAR(64) NOT NULL,
                 author_id VARCHAR(255) NOT NULL,
                 message_body VARCHAR(255) NOT NULL,
                 post_time INT NOT NULL,
@@ -143,6 +192,7 @@ class PdoStorage
         $query[] = sprintf(
             'CREATE TABLE IF NOT EXISTS %s (
                 id VARCHAR(64) NOT NULL,
+                space_id VARCHAR(64) NOT NULL,
                 source VARCHAR(255) NOT NULL,
                 time INT NOT NULL,
                 UNIQUE (id, source)

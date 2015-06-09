@@ -130,12 +130,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/fkooman/php-lib-rest.git",
-                "reference": "04eed334446f7fba0f41890ff1f094abf3468705"
+                "reference": "efbbf1309f7cfd24c06eef47f6913bd1c91720ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/04eed334446f7fba0f41890ff1f094abf3468705",
-                "reference": "04eed334446f7fba0f41890ff1f094abf3468705",
+                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/efbbf1309f7cfd24c06eef47f6913bd1c91720ac",
+                "reference": "efbbf1309f7cfd24c06eef47f6913bd1c91720ac",
                 "shasum": ""
             },
             "require": {
@@ -171,7 +171,7 @@
                 }
             ],
             "description": "Simple PHP library for writing REST services.",
-            "time": "2015-06-05 10:11:05"
+            "time": "2015-06-09 07:43:21"
         },
         {
             "name": "fkooman/rest-plugin-bearer",
@@ -218,12 +218,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/fkooman/php-lib-rest-plugin-indieauth.git",
-                "reference": "8e5926c2ba69c00100f2f839db43b5310909207d"
+                "reference": "60f5366616e302389f450145887c32466edcea64"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-rest-plugin-indieauth/zipball/8e5926c2ba69c00100f2f839db43b5310909207d",
-                "reference": "8e5926c2ba69c00100f2f839db43b5310909207d",
+                "url": "https://api.github.com/repos/fkooman/php-lib-rest-plugin-indieauth/zipball/60f5366616e302389f450145887c32466edcea64",
+                "reference": "60f5366616e302389f450145887c32466edcea64",
                 "shasum": ""
             },
             "require": {
@@ -250,7 +250,7 @@
                 }
             ],
             "description": "IndieAuth plugin for fkooman/rest",
-            "time": "2015-06-05 10:29:11"
+            "time": "2015-06-08 12:19:08"
         },
         {
             "name": "guzzle/guzzle",
@@ -525,16 +525,16 @@
         },
         {
             "name": "twig/twig",
-            "version": "v1.18.1",
+            "version": "v1.18.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "9f70492f44398e276d1b81c1b43adfe6751c7b7f"
+                "reference": "e8e6575abf6102af53ec283f7f14b89e304fa602"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/9f70492f44398e276d1b81c1b43adfe6751c7b7f",
-                "reference": "9f70492f44398e276d1b81c1b43adfe6751c7b7f",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/e8e6575abf6102af53ec283f7f14b89e304fa602",
+                "reference": "e8e6575abf6102af53ec283f7f14b89e304fa602",
                 "shasum": ""
             },
             "require": {
@@ -578,7 +578,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2015-04-19 08:30:27"
+            "time": "2015-06-06 23:31:24"
         }
     ],
     "packages-dev": [],

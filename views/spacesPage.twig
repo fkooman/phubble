@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Message Board</title>
+  <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/normalize.css">
+  <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/style.css">
+</head>
+
+<body>
+    <div id="container">
+        <a class="header" href="{{ root|e }}"><h1>Phubble</h1></a>
+
+        {% if not user_id %}
+            <form class="try" method="post" action="{{ rootUrl|e }}_indieauth/auth">
+                <span class="label">https://</span><input required type="text" name="me" placeholder="example.org">
+                <input type="submit" value="Sign In">
+            </form>
+        {% endif %}
+
+        {% if user_id %}
+        <h2>Create Space</h2>
+
+        <form method="post" action="">
+            <input type="text" name="space" placeholder="Space Name..." required="required">
+            <input type="submit" value="Create">
+        </form>
+        {% endif %}
+
+        <h2>Public Spaces</h2>
+
+        {% if not spaces %}
+            <p>No spaces yet!</p>
+        {% endif %}
+
+        <ul>
+        {% for space in spaces %}
+            <li><a href="{{ space.id }}/">{{ space.id|e }}</a></li>
+        {% endfor %}
+        </ul>
+
+        <div class="footer">
+            <span class="pull-left">Phubble</span>
+            {% if user_id %}
+            <span class="pull-right">
+                {{ user_id|e }} | <form method="post" action="{{ rootUrl|e }}_indieauth/logout"><input type="submit" value="Logout"></form>
+            </span>
+            {% endif %}
+        </div> <!-- /footer -->
+
+    </div> <!-- /container -->
+</body>
+</html>

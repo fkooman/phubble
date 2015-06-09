@@ -65,7 +65,26 @@ class MessageBoardService extends Service
         $this->get(
             '/',
             function (Request $request, IndieInfo $indieInfo = null) {
-                return $this->getMessages($request, $indieInfo);
+                return $this->getSpaces($request, $indieInfo);
+            },
+            array(
+                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
+                    'requireAuth' => false,
+                ),
+            )
+        );
+
+        $this->post(
+            '/',
+            function (Request $request, IndieInfo $indieInfo) {
+                return $this->postSpace($request, $indieInfo);
+            }
+        );
+
+        $this->get(
+            '/:space/',
+            function (Request $request, IndieInfo $indieInfo = null, $space) {
+                return $this->getMessages($request, $indieInfo, $space);
             },
             array(
                 'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
@@ -75,9 +94,9 @@ class MessageBoardService extends Service
         );
 
         $this->get(
-            '/:id',
-            function (Request $request, IndieInfo $indieInfo = null, $id) {
-                return $this->getMessage($request, $indieInfo, $id);
+            '/:space/:id',
+            function (Request $request, IndieInfo $indieInfo = null, $space, $id) {
+                return $this->getMessage($request, $indieInfo, $space, $id);
             },
             array(
                 'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
@@ -87,23 +106,23 @@ class MessageBoardService extends Service
         );
 
         $this->delete(
-            '/:id',
-            function (Request $request, IndieInfo $indieInfo, $id) {
-                return $this->deleteMessage($request, $indieInfo, $id);
+            '/:space/:id',
+            function (Request $request, IndieInfo $indieInfo, $space, $id) {
+                return $this->deleteMessage($request, $indieInfo, $space, $id);
             }
         );
 
         $this->post(
-            '/',
-            function (Request $request, IndieInfo $indieInfo) {
-                return $this->postMessage($request, $indieInfo);
+            '/:space/',
+            function (Request $request, IndieInfo $indieInfo, $space) {
+                return $this->postMessage($request, $indieInfo, $space);
             }
         );
 
         $this->post(
-            '/micropub/',
-            function (Request $request, TokenInfo $tokenInfo) {
-                return $this->micropubMessage($request, $tokenInfo);
+            '/:space/micropub',
+            function (Request $request, TokenInfo $tokenInfo, $space) {
+                return $this->micropubMessage($request, $tokenInfo, $space);
             },
             array(
                 'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array('enabled' => false),
@@ -112,11 +131,34 @@ class MessageBoardService extends Service
         );
     }
 
-    public function getMessages(Request $request, $indieInfo)
+    public function postSpace(Request $request, $indieInfo)
+    {
+        $spaceName = $request->getPostParameter('space');
+
+        $this->pdoStorage->createSpace($spaceName, $indieInfo->getUserId());
+
+        return new RedirectResponse($request->getUrl()->getRootUrl().$spaceName.'/', 302);
+    }
+
+    public function getSpaces(Request $request, $indieInfo)
+    {
+        $userId = null !== $indieInfo ? $indieInfo->getUserId() : null;
+        $spaces = $this->pdoStorage->getSpaces();
+
+        return $this->templateManager->render(
+            'spacesPage',
+            array(
+                'spaces' => $spaces,
+                'user_id' => $userId,
+            )
+        );
+    }
+
+    public function getMessages(Request $request, $indieInfo, $space)
     {
         $page = $request->getUrl()->getQueryParameter('p');
 
-        $messages = $this->pdoStorage->getMessages($page);
+        $messages = $this->pdoStorage->getMessages($space, $page);
         $actualCount = count($messages);
 
         $userId = null !== $indieInfo ? $indieInfo->getUserId() : null;
@@ -124,6 +166,7 @@ class MessageBoardService extends Service
         return $this->templateManager->render(
             'messagesPage',
             array(
+                'space' => $space,
                 'page' => $page,
                 'messages' => $messages,
                 'has_prev' => $page > 0,
@@ -133,16 +176,17 @@ class MessageBoardService extends Service
         );
     }
 
-    public function getMessage(Request $request, $indieInfo, $id)
+    public function getMessage(Request $request, $indieInfo, $space, $id)
     {
         // FIXME: validate $id!
-        $message = $this->pdoStorage->getMessage($id);
-        $mentions = $this->pdoStorage->getMentions($id);
+        $message = $this->pdoStorage->getMessage($space, $id);
+        $mentions = $this->pdoStorage->getMentions($space, $id);
         $userId = null !== $indieInfo ? $indieInfo->getUserId() : null;
 
         return $this->templateManager->render(
             'messagePage',
             array(
+                'space' => $space,
                 'message' => $message,
                 'mentions' => $mentions,
                 'user_id' => $userId,
@@ -150,28 +194,29 @@ class MessageBoardService extends Service
         );
     }
 
-    public function deleteMessage(Request $request, IndieInfo $indieInfo, $id)
+    public function deleteMessage(Request $request, IndieInfo $indieInfo, $space, $id)
     {
         // FIXME: validate $id!
-        $message = $this->pdoStorage->deleteMessage($id);
+        $message = $this->pdoStorage->deleteMessage($space, $id);
 
         // FIXME: check if userid owns the post!
 
-        return new RedirectResponse($request->getUrl()->getRootUrl(), 302);
+        return new RedirectResponse($request->getUrl()->getRootUrl().$space.'/', 302);
     }
 
-    public function postMessage(Request $request, IndieInfo $indieInfo)
+    public function postMessage(Request $request, IndieInfo $indieInfo, $space)
     {
+        // FIXME: validate space
         $authorId = $indieInfo->getUserId();
         $messageBody = $this->validateMessageBody($request->getPostParameter('message_body'));
 
         $postTime = $this->io->getTime();
         $messageId = $this->io->getRandomHex();
 
-        $this->pdoStorage->storeMessage($messageId, $authorId, $messageBody, $postTime);
+        $this->pdoStorage->storeMessage($space, $messageId, $authorId, $messageBody, $postTime);
 
         $messageUrls = $this->extractUrls($messageBody);
-        $source = $request->getUrl()->getRootUrl().$messageId;
+        $source = $request->getUrl()->getRootUrl().$space.'/'.$messageId;
         foreach ($messageUrls as $u) {
             $this->sendWebmention($source, $u);
         }
@@ -179,17 +224,17 @@ class MessageBoardService extends Service
         return new RedirectResponse($request->getUrl()->toString(), 302);
     }
 
-    public function micropubMessage(Request $request, TokenInfo $tokenInfo)
+    public function micropubMessage(Request $request, TokenInfo $tokenInfo, $space)
     {
         $authorId = $tokenInfo->get('sub');
         $messageBody = $this->validateMessageBody($request->getPostParameter('content'));
         $postTime = $this->io->getTime();
         $messageId = $this->io->getRandomHex();
 
-        $this->pdoStorage->storeMessage($messageId, $authorId, $messageBody, $postTime);
+        $this->pdoStorage->storeMessage($space, $messageId, $authorId, $messageBody, $postTime);
 
         $response = new Response(201);
-        $response->setHeader('Location', $request->getUrl()->getRootUrl().$messageId);
+        $response->setHeader('Location', $request->getUrl()->getRootUrl().$space.'/'.$messageId);
 
         return $response;
     }

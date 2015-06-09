@@ -25,6 +25,7 @@ use fkooman\MessageBoard\PdoStorage;
 use fkooman\MessageBoard\TemplateManager;
 use fkooman\Rest\ExceptionHandler;
 use fkooman\Rest\PluginRegistry;
+use fkooman\Http\Request;
 
 ExceptionHandler::register();
 
@@ -42,9 +43,14 @@ $pdoStorage = new PdoStorage($pdo);
 
 $webmentionEndpoint = $iniReader->v('webmentionEndpoint', false, false);
 
+$request = new Request($_SERVER);
+
 $templateManager = new TemplateManager($iniReader->v('templateCache', false, null));
 $templateManager->setGlobalVariables(
     array(
+        'root' => $request->getUrl()->getRoot(),
+        'rootFolder' => $request->getUrl()->getRootFolder(),
+        'rootUrl' => $request->getUrl()->getRootUrl(),
         'webmentionEndpoint' => $webmentionEndpoint,
     )
 );
@@ -84,4 +90,4 @@ if (false !== $webmentionEndpoint) {
         )
     );
 }
-$response->send();
+$response->send($request);
