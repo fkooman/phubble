@@ -1,29 +1,141 @@
 body {
-    text-align: justify;
+    padding: 0.25em;
+    background-color: #fff;
 }
 
 div#container {
+    text-align: justify;
     max-width: 600px;
     margin: 0 auto;
-    line-height: 1.4;
-}
-
-h1 {
-    border-bottom: 1px solid #000;
-    padding-bottom: 10px;
-}
-
-div.prevnext {
-    overflow: hidden;
-}
-
-a.header {
-    text-decoration: none;
-    color: #000;
+    line-height: 1.5;
 }
 
 a {
     text-decoration: underline;
+    color: #000;
+}
+
+ul.header a, ul.footer a {
+    text-decoration: none;
+}
+
+ul.header, ul.footer {
+    padding: 0;
+}
+
+ul.header {
+    border-bottom: 1px solid #ccc;
+    margin: 0;
+}
+
+ul.footer {
+    margin-top: 1em;
+    border-top: 1px solid #ccc;
+    text-align: right;
+}
+
+ul.header li, ul.footer li {
+    display: inline;
+}
+
+ul.header li:after, ul.footer li:after {
+    content: " | ";
+}
+
+ul.header li.last:after, ul.footer li.last:after {
+    content: "";
+}
+
+form.authenticate, form.create_space, form.edit_space {
+    text-align: center;
+    padding: 1em;
+    margin: 1em auto;
+}
+
+
+form.create_message textarea {
+    padding: 0;
+    width: 100%;
+}
+
+form.authenticate label {
+    padding: 0.4em 0.25em;
+    background-color: #ddd;
+    border: 1px solid #bbb;
+    border-right: 0;
+}
+
+input[type=text], textarea {
+    padding: 0.4em;
+    border: 1px solid #bbb;
+}
+
+input[type=submit] {
+    padding: 0.4em;
+    background-color: #ddd;
+    border: 1px solid #bbb;
+    color: #000; 
+}
+
+input[type=submit].info {
+    background-color: #063;
+    border: 1px solid #041;
+    color: #fff; 
+}
+
+input[type=submit].warn {
+    background-color: #fc0;
+    border: 1px solid #da0;
+    color: #000; 
+}
+
+input[type=submit].err {
+    background-color: #c00;
+    border: 1px solid #a00;
+    color: #fff; 
+}
+
+p.info {
+    background-color: #063;
+    border: 1px solid #041;
+    color: #fff;
+    padding: 1em;
+}
+
+p.info a {
+    color: #fff;
+}
+
+p.warn {
+    background-color: #fc0;
+    border: 1px solid #da0;
+    color: #000;
+    padding: 1em;
+}
+
+p.warn a {
+    color: #000;
+}
+
+p.err {
+    background-color: #c00;
+    border: 1px solid #a00;
+    color: #000;
+    padding: 1em;
+}
+
+p.err a {
+    color: #000;
+}
+
+p.block {
+    background-color: #eee; 
+    border: 1px solid #ccc;
+    color: #000;
+    padding: 1em;
+}
+
+p.block a {
     color: #000;
 }
 
@@ -32,58 +144,6 @@ table.message {
     margin: 0.5em 0;
     border: 1px solid #bbb;
     border-collapse: collapse;
-}
-
-span.label {
-    padding: 0.25em;
-    border: 1px solid #d5d5d5;
-    border-right: 0;
-    background-color: #e5e5e5;
-}
-
-input[type=text], textarea {
-    padding: 0.25em;
-    border: 1px solid #d5d5d5;
-}
-
-form.editSpace input[type="text"], form.editSpace input[type="submit"] {
-    display: block;
-    margin: 0 0 1em 0;
-}
-
-form.editSpace input[type="submit"] {
-    margin: 1em 0;
-}
-    
-form.try {
-    text-align: center;
-    padding: 1em;
-    margin: 1em auto;
-}
-
-input[type=submit], a.btn {
-    padding: 0.25em;
-    border: 1px solid #ddd;
-    color: #000; 
-    background: #eee;
-    text-decoration: none;
-}
-
-input[type=submit].warn {
-    background-color: #b00;
-    border: 1px solid #a00;
-    color: #fff;
-}
-
-form.message {
-    margin: 1em 0 1em 0;
-    padding: 0;
-}
-
-form.message textarea {
-    padding: 0;
-    margin: 0;
-    width: 100%;
 }
 
 table.message th {
@@ -108,38 +168,5 @@ table.message td {
 }
 
 span.date {
-    float: right;
-}
-
-div.footer {
-    overflow: hidden;
-    font-size: 85%;
-    color: #888;
-    margin-bottom: 0.5em;
-}
-
-div.footer a {
-    color: #888;
-}
-
-ul.mentions {
-    color: #888;    
-}
-
-ul.mentions li a {
-    color: #888;
-}
-
-span.mention_count {
-    float: right;
-    font-size: 85%;
-    color: #888;
-}
-
-.pull-left {
-    float: left;
-}
-
-.pull-right {
     float: right;
 }

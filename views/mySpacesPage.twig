@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+
+<html lang="en">
+{% include 'head.twig' %}
+<body>
+    <div id="container">
+        {% include 'header.twig' %}
+
+        {% if mySpaces %}
+            <h2>My Spaces</h2>
+            <p>
+    This is the list of spaces you own.
+            </p>
+
+            <ul>
+            {% for space in mySpaces %}
+                <li>
+                    <a href="{{ root|e }}{{ space.getId }}/">{{ space.getId|e }}</a>
+                    (<a href="{{ root|e }}{{ space.getId }}/_edit">edit</a>)
+                    {% if space.getSecret %}
+                        (secret space)
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if memberSpaces %}
+            <h2>Member Spaces</h2>
+            <p>
+    This is a list of spaces you are a member of and can contribute to.
+            </p>
+
+            <ul>
+            {% for space in memberSpaces %}
+                <li>
+                    <a href="{{ root|e }}{{ space.getId }}/">{{ space.getId|e }}</a>
+                    {% if space.getSecret %}
+                        (secret space)
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
+        <h2>Create a Space</h2>
+        <p>
+Choose a name for your space and create it!
+        </p>
+        <form class="create_space" method="post" action="{{ root|e }}">
+            <input type="text" name="space" placeholder="Space Name..." required="required">
+            <input class="info" type="submit" value="Create">
+        </form>
+
+        {% include 'footer.twig' %}
+    </div> <!-- /container -->
+</body>
+</html>

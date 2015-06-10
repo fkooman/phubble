@@ -1,0 +1,7 @@
+<ul class="header">
+    <li><a href="{{ root|e }}">Home</a></li>
+    {% if indieInfo %}
+        <li><a href="{{ root|e }}_my_spaces/">My Spaces</a></li>
+    {% endif %}
+    <li class="last"><a href="{{ root|e }}_public/">Public Spaces</a></li>
+</ul>

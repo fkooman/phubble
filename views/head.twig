@@ -1,0 +1,11 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    {% if space is defined %}
+        <title>{{ space.getId|e }} - Phubble</title>
+    {% else %}
+        <title>Phubble</title>
+    {% endif %}
+    <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/style.css">
+</head>

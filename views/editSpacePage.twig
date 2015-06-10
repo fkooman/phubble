@@ -1,34 +1,30 @@
 <!DOCTYPE html>
 
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Message Board</title>
-
-  <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/normalize.css">
-  <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/style.css">
-</head>
-
+{% include 'head.twig' %}
 <body>
     <div id="container">
-        <a class="header" href="{{ root|e }}{{ space.getId|e }}/"><h1>Phubble - {{ space.getId|e }}</h1></a>
+        {% include 'header.twig' %}
 
-        <form class="editSpace" method="post" action="">
+        <h2>{{ space.getId|e }}</h2>
+        <p>
+Here you can modify some space settings.
+        </p>
+        <p class="warn">
+Make sure you get the owner URL correct, otherwise the space cannot be managed
+anymore!
+        </p>
+        <form class="edit_space" method="post" action="">
             <label for="owner">Owner</label><input id="owner" type="text" name="owner" value="{{ space.getOwner|e }}">
-            <input id="secret" name="secret" type="checkbox"><label for="secret">Secret</label>
-            <input type="submit" value="Update">
+            {% if space.getSecret %}
+                <input id="secret" name="secret" type="checkbox" checked="checked"><label for="secret">Secret</label>
+            {% else %}
+                <input id="secret" name="secret" type="checkbox"><label for="secret">Secret</label>
+            {% endif %}
+            <input type="submit" value="Save">
         </form>
 
-        <div class="footer">
-            <span class="pull-left">Phubble</span>
-            <span class="pull-right">
-            {% if indieInfo %}
-                {{ indieInfo.getUserId|e }} | <form method="post" action="{{ rootUrl|e}}_indieauth/logout"><input type="submit" value="Logout"></form>
-            {% endif %}
-            </span>
-        </div> <!-- /footer -->
-
+        {% include 'footer.twig' %}
     </div> <!-- /container -->
 </body>
 </html>

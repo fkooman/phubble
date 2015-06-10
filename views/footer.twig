@@ -1,0 +1,8 @@
+<ul class="footer">
+    {% if indieInfo %}
+        <li><a href="{{ root|e }}_sign_in">{{ indieInfo.getUserId|e }}</a></li>
+    {% else %}
+        <li><a href="{{ root|e }}_sign_in">Sign In</a></li>
+    {% endif %}
+    <li class="last"><a href="https://github.com/fkooman/phubble">Code</a></li>
+</ul>

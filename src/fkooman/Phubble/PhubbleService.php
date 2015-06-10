@@ -71,7 +71,7 @@ class PhubbleService extends Service
         $this->get(
             '/',
             function (Request $request, IndieInfo $indieInfo = null) {
-                return $this->getSpaces($request, $indieInfo);
+                return $this->getIndex($request, $indieInfo);
             },
             array(
                 'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
@@ -84,6 +84,37 @@ class PhubbleService extends Service
             '/',
             function (Request $request, IndieInfo $indieInfo) {
                 return $this->addSpace($request, $indieInfo);
+            }
+        );
+
+        $this->get(
+            '/_public/',
+            function (Request $request, IndieInfo $indieInfo = null) {
+                return $this->getPublicSpaces($request, $indieInfo);
+            },
+            array(
+                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
+                    'requireAuth' => false,
+                ),
+            )
+        );
+
+        $this->get(
+            '/_sign_in',
+            function (Request $request, IndieInfo $indieInfo = null) {
+                return $this->getSignInPage($request, $indieInfo);
+            },
+            array(
+                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
+                    'requireAuth' => false,
+                ),
+            )
+        );
+
+        $this->get(
+            '/_my_spaces/',
+            function (Request $request, IndieInfo $indieInfo) {
+                return $this->getMySpaces($request, $indieInfo);
             }
         );
 
@@ -196,27 +227,75 @@ class PhubbleService extends Service
         return new RedirectResponse($request->getUrl()->getRootUrl().$space->getId().'/', 302);
     }
 
-    public function getSpaces(Request $request, $indieInfo)
+    public function getPublicSpaces(Request $request, $indieInfo)
+    {
+        $publicSpaces = $this->db->getPublicSpaces();
+
+        return $this->templateManager->render(
+            'publicSpacesPage',
+            array(
+                'publicSpaces' => $publicSpaces,
+                'indieInfo' => $indieInfo,
+            )
+        );
+    }
+
+    public function getSignInPage(Request $request, $indieInfo)
+    {
+        return $this->templateManager->render(
+            'signInPage',
+            array(
+                'indieInfo' => $indieInfo,
+            )
+        );
+    }
+
+    public function getMySpaces(Request $request, $indieInfo)
     {
         $publicSpaces = $this->db->getPublicSpaces();
         $secretSpaces = $this->db->getSecretSpaces();
 
-        $mySecretSpaces = array();
-        if (null !== $indieInfo) {
-            // only show secretSpaces that has us in the ACL
-            foreach ($secretSpaces as $s) {
+        $mySpaces = array();
+        $memberSpaces = array();
+
+        foreach ($publicSpaces as $s) {
+            if ($indieInfo->getUserId() === $s->getOwner()) {
+                $mySpaces[] = $s;
+            } else {
+                // are we a member?
                 $spaceAcl = $this->getSpaceAcl($s);
                 if (in_array($indieInfo->getUserId(), $spaceAcl)) {
-                    $mySecretSpaces[] = $s;
+                    $memberSpaces[] = $s;
+                }
+            }
+        }
+        foreach ($secretSpaces as $s) {
+            if ($indieInfo->getUserId() === $s->getOwner()) {
+                $mySpaces[] = $s;
+            } else {
+                // are we a member?
+                $spaceAcl = $this->getSpaceAcl($s);
+                if (in_array($indieInfo->getUserId(), $spaceAcl)) {
+                    $memberSpaces[] = $s;
                 }
             }
         }
 
         return $this->templateManager->render(
-            'spacesPage',
+            'mySpacesPage',
             array(
-                'publicSpaces' => $publicSpaces,
-                'mySecretSpaces' => $mySecretSpaces,
+                'memberSpaces' => $memberSpaces,
+                'mySpaces' => $mySpaces,
+                'indieInfo' => $indieInfo,
+            )
+        );
+    }
+
+    public function getIndex(Request $request, $indieInfo)
+    {
+        return $this->templateManager->render(
+            'indexPage',
+            array(
                 'indieInfo' => $indieInfo,
             )
         );
@@ -241,10 +320,10 @@ class PhubbleService extends Service
         return $this->templateManager->render(
             'messagesPage',
             array(
-                'canPost' => $canPost,
+                'indieInfo' => $indieInfo,
                 'space' => $space,
                 'messages' => $messages,
-                'indieInfo' => $indieInfo,
+                'canPost' => $canPost,
             )
         );
     }

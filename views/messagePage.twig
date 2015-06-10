@@ -1,33 +1,21 @@
 <!DOCTYPE html>
 
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Message Board</title>
-
-  <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/normalize.css">
-  <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/style.css">
-
-  <link rel="micropub" href="{{ rootUrl|e }}{{ space.getId|e}}/_micropub">
-</head>
-
+{% include 'head.twig' %}
 <body>
     <div id="container">
-        <a class="header" href="{{ root|e }}{{ space.getId|e}}/"><h1>Phubble - {{ space.getId|e }}</h1></a>
+        {% include 'header.twig' %}
 
-        {% if not indieInfo %}
-            <form class="try" method="post" action="{{ rootUrl|e }}_indieauth/auth">
-                <span class="label">https://</span><input required type="text" name="me" placeholder="example.org">
-                <input type="hidden" name="redirect_to" value="{{ rootUrl|e}}{{ space.getId|e}}/{{ message.getId|e }}">
-                <input type="submit" value="Sign In">
-            </form>
+        {% if space.getSecret %}
+            <h2>{{ space.getId|e }} (secret)</h2>
+        {% else %}
+            <h2>{{ space.getId|e }}</h2>
         {% endif %}
 
         {% if indieInfo and message.getAuthorId == indieInfo.getUserId %}
         <form method="post" action="{{ message.id|e }}">
             <input type="hidden" name="_METHOD" value="DELETE">
-            <input type="submit" class="warn" value="Delete">
+            <input type="submit" class="err" value="Delete">
         </form>
         {% endif %}
 
@@ -43,15 +31,7 @@
             </tr>
         </table>
 
-        <div class="footer">
-            <span class="pull-left">Phubble</span>
-            <span class="pull-right">
-            {% if indieInfo %}
-                {{ indieInfo.getUserId|e }} | <form method="post" action="{{ rootUrl|e}}_indieauth/logout"><input type="submit" value="Logout"></form>
-            {% endif %}
-            </span>
-        </div> <!-- /footer -->
-
+        {% include 'footer.twig' %}
     </div> <!-- /container -->
 </body>
 </html>

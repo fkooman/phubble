@@ -1,46 +1,28 @@
 <!DOCTYPE html>
 
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Message Board</title>
-  <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/normalize.css">
-  <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/style.css">
-
-    <link rel="micropub" href="{{ rootUrl|e }}{{ space.getId|e}}/_micropub">
-</head>
-
+{% include 'head.twig' %}
 <body>
     <div id="container">
-        <a class="header" href="{{ root|e }}"><h1>Phubble - {{ space.getId|e }}</h1></a>
+        {% include 'header.twig' %}
 
-        {% if indieInfo and space.getOwner == indieInfo.getUserId %}
-            <form method="get" action="_edit">
-                <input type="submit" value="Edit">
-            </form>
-        {% endif %}
-
-        {% if not indieInfo %}
-            <form class="try" method="post" action="{{ rootUrl|e }}_indieauth/auth">
-                <span class="label">https://</span><input required type="text" name="me" placeholder="example.org">
-                <input type="submit" value="Sign In">
-            </form>
+        {% if space.getSecret %}
+            <h2>{{ space.getId|e }} (secret)</h2>
+        {% else %}
+            <h2>{{ space.getId|e }}</h2>
         {% endif %}
 
         {% if indieInfo and canPost %}
-        <form class="message" method="post">
-            <textarea name="message_body" placeholder="Your Message..." required></textarea>
+        <form class="create_message" method="post">
+            <textarea name="message_body" placeholder="Your Message..." required="required"></textarea>
             <input type="submit" value="Post">
         </form>
         {% endif %}
 
-        {% if not messages and canPost %}
-            <p>No messages posted yet, be the first!</p>
-        {% endif %}
-
-        {% if not messages and not canPost %}
-            <p>No messages posted yet!</p>
+        {% if not messages %}
+            <p class="block">
+No messages posted yet!
+            </p>
         {% endif %}
 
         {% for message in messages %}
@@ -61,15 +43,7 @@
         </table>
         {% endfor %}
 
-        <div class="footer">
-            <span class="pull-left">Phubble</span>
-            <span class="pull-right">
-            {% if indieInfo %}
-                {{ indieInfo.getUserId|e }} | <form method="post" action="{{ rootUrl|e}}_indieauth/logout"><input type="submit" value="Logout"></form>
-            {% endif %}
-            </span>
-        </div> <!-- /footer -->
-
+        {% include 'footer.twig' %}
     </div> <!-- /container -->
 </body>
 </html>
