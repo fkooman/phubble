@@ -5,7 +5,7 @@
 aclFile = "/etc/phubble/acl.json"
 
 [Discovery]
-authorize_endpoint = "https://indiecert.net/auth"
+authorization_endpoint = "https://indiecert.net/auth"
 token_endpoint = "https://indiecert.net/token"
 
 [Introspection]
