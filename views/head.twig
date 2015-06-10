@@ -8,4 +8,7 @@
     {% endif %}
     <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/normalize.css">
     <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/style.css">
+    {% if space is defined and not message is defined %}
+        <link rel="micropub" href="{{ rootUrl|e }}{{ space.getId}}/_micropub">
+    {% endif %}
 </head>

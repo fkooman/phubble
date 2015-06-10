@@ -130,15 +130,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/fkooman/php-lib-rest.git",
-                "reference": "efbbf1309f7cfd24c06eef47f6913bd1c91720ac"
+                "reference": "580c3a2f19a82d1a3075b768f451341e46c73ecc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/efbbf1309f7cfd24c06eef47f6913bd1c91720ac",
-                "reference": "efbbf1309f7cfd24c06eef47f6913bd1c91720ac",
+                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/580c3a2f19a82d1a3075b768f451341e46c73ecc",
+                "reference": "580c3a2f19a82d1a3075b768f451341e46c73ecc",
                 "shasum": ""
             },
             "require": {
+                "ext-mbstring": "*",
                 "fkooman/json": "~0.6.0",
                 "php": ">=5.3.3"
             },
@@ -171,7 +172,7 @@
                 }
             ],
             "description": "Simple PHP library for writing REST services.",
-            "time": "2015-06-09 07:43:21"
+            "time": "2015-06-10 16:27:40"
         },
         {
             "name": "fkooman/rest-plugin-bearer",
@@ -218,16 +219,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/fkooman/php-lib-rest-plugin-indieauth.git",
-                "reference": "60f5366616e302389f450145887c32466edcea64"
+                "reference": "cefa06aa02a49f9ccd5ba351f158a8f181c6d498"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-rest-plugin-indieauth/zipball/60f5366616e302389f450145887c32466edcea64",
-                "reference": "60f5366616e302389f450145887c32466edcea64",
+                "url": "https://api.github.com/repos/fkooman/php-lib-rest-plugin-indieauth/zipball/cefa06aa02a49f9ccd5ba351f158a8f181c6d498",
+                "reference": "cefa06aa02a49f9ccd5ba351f158a8f181c6d498",
                 "shasum": ""
             },
             "require": {
                 "ext-openssl": "*",
+                "ext-xml": "*",
                 "fkooman/rest": "dev-develop",
                 "guzzlehttp/guzzle": "~4.0",
                 "php": ">=5.4.0"
@@ -250,7 +252,7 @@
                 }
             ],
             "description": "IndieAuth plugin for fkooman/rest",
-            "time": "2015-06-08 12:19:08"
+            "time": "2015-06-10 12:39:56"
         },
         {
             "name": "guzzle/guzzle",

@@ -317,15 +317,21 @@ class PhubbleService extends Service
             throw new ForbiddenException('no permission to access this space');
         }
 
-        return $this->templateManager->render(
-            'messagesPage',
-            array(
-                'indieInfo' => $indieInfo,
-                'space' => $space,
-                'messages' => $messages,
-                'canPost' => $canPost,
+        $response = new Response();
+        $response->setBody(
+            $this->templateManager->render(
+                'messagesPage',
+                array(
+                    'indieInfo' => $indieInfo,
+                    'space' => $space,
+                    'messages' => $messages,
+                    'canPost' => $canPost,
+                )
             )
         );
+        $response->setHeader('Link', sprintf('<%s>; rel="micropub"', $request->getUrl()->getRootUrl().$space->getId().'/_micropub'));
+
+        return $response;
     }
 
     public function getMessage(Request $request, $indieInfo, $spaceId, $id)
