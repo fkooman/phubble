@@ -14,8 +14,12 @@
 
         {% if indieInfo and canPost %}
         <form class="create_message" method="post">
-            <textarea name="message_body" placeholder="Your Message..." required="required"></textarea>
-            <input type="submit" value="Post">
+            <div>
+                <textarea name="message_body" placeholder="Your Message..." required="required"></textarea>
+            </div>
+            <div>
+                <input type="submit" value="Post">
+            </div>
         </form>
         {% endif %}
 

@@ -15,13 +15,19 @@ Make sure you get the owner URL correct, otherwise the space cannot be managed
 anymore!
         </p>
         <form class="edit_space" method="post" action="">
-            <label for="owner">Owner</label><input id="owner" type="text" name="owner" value="{{ space.getOwner|e }}">
-            {% if space.getSecret %}
-                <input id="secret" name="secret" type="checkbox" checked="checked"><label for="secret">Secret</label>
-            {% else %}
-                <input id="secret" name="secret" type="checkbox"><label for="secret">Secret</label>
-            {% endif %}
-            <input type="submit" value="Save">
+            <div>
+                <label for="owner">Owner</label><input id="owner" type="text" name="owner" value="{{ space.getOwner|e }}">
+            </div>
+            <div>
+                {% if space.getSecret %}
+                    <label><input name="secret" type="checkbox" checked="checked"> Secret</label>
+                {% else %}
+                    <label><input name="secret" type="checkbox"> Secret</label>
+                {% endif %}
+            </div>
+            <div>
+                <input type="submit" value="Save">
+            </div>
         </form>
 
         {% include 'footer.twig' %}

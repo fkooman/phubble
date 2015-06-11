@@ -46,16 +46,27 @@ ul.header li.last:after, ul.footer li.last:after {
     content: "";
 }
 
-form.authenticate, form.create_space, form.edit_space {
-    text-align: center;
-    padding: 1em;
+form.edit_space, form.create_message {
+    padding-right: 1em;
     margin: 1em auto;
 }
 
+form.edit_space label {
+    display: block;
+}
 
-form.create_message textarea {
-    padding: 0;
+form.edit_space input, form.edit_space textarea, form.create_message input, form.create_message textarea {
+    margin-bottom: 1em;
+}
+
+form.edit_space input[type="text"], form.edit_space textarea, form.create_message textarea {
     width: 100%;
+}
+
+form.authenticate, form.create_space {
+    text-align: center;
+    padding: 1em;
+    margin: 1em auto;
 }
 
 form.authenticate label {
