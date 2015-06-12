@@ -25,24 +25,24 @@
 
         {% if not messages %}
             <p class="block">
-No messages posted yet!
+                No messages posted yet!
             </p>
         {% endif %}
 
         {% for message in messages %}
-        <table class="message">
+        <table class="message h-entry">
             <tr>
             {% if indieInfo and message.getAuthorId == indieInfo.getUserId %}
                 <th class="owner">
             {% else %}
                 <th>
             {% endif %}
-                    <a href="{{ message.getAuthorId|e }}">{{ message.getAuthorId|e }}</a>
-                    <span class="date"><a href="{{ message.getId|e }}">{{ message.getPostTime|e|date }}</a></span>
+                    <a class="p-author" href="{{ message.getAuthorId|e }}">{{ message.getAuthorId|e }}</a>
+                    <span class="date"><a href="{{ message.getId|e }}"><span class="dt-published">{{ message.getPostTime|e|date("Y-m-d H:i:s T") }}</span></a></span>
                 </th>
             </tr>
             <tr>
-                <td>{{ message.getMessageBody|raw }}</td>
+                <td class="e-content">{{ message.getMessageBody|raw }}</td>
             </tr>
         </table>
         {% endfor %}

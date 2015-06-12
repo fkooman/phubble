@@ -23,7 +23,7 @@
             <tr>
                 <th>
                     <a class="p-author" href="{{ message.getAuthorId|e }}">{{ message.getAuthorId|e }}</a>
-                    <span class="date">{{ message.getPostTime|e|date }}</span>
+                    <span class="date dt-published">{{ message.getPostTime|e|date("Y-m-d H:i:s T") }}</span>
                 </th>
             </tr>
             <tr>
