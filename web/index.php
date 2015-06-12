@@ -75,4 +75,6 @@ $pluginRegistry->registerDefaultPlugin(
 );
 $pluginRegistry->registerOptionalPlugin($bearerAuth);
 $service->setPluginRegistry($pluginRegistry);
-$service->run($request)->send();
+$response = $service->run($request);
+$response->setHeader('Access-Control-Allow-Origin', '*');
+$response->send();
