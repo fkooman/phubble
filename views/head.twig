@@ -10,5 +10,7 @@
     <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/style.css">
     {% if space is defined and not message is defined %}
         <link rel="micropub" href="{{ rootUrl|e }}{{ space.getId}}/_micropub">
+        <link rel="authorization_endpoint" href="{{ authorizationEndpoint|e }}">
+        <link rel="token_endpoint" href="{{ tokenEndpoint|e }}">
     {% endif %}
 </head>

@@ -194,7 +194,7 @@ class PhubbleService extends Service
 
     public function optionsMicropub(Request $request, $space)
     {
-#        $origin = $request->getHeader('Origin');
+        #        $origin = $request->getHeader('Origin');
 #        if(null === $origin) {
 #            $origin = '*';
 #        }
