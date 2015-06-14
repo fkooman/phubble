@@ -194,14 +194,14 @@ class PhubbleService extends Service
 
     public function optionsMicropub(Request $request, $space)
     {
-        $origin = $request->getHeader('Origin');
-        if (null === $origin) {
-            $origin = '*';
-        }
+#        $origin = $request->getHeader('Origin');
+#        if(null === $origin) {
+#            $origin = '*';
+#        }
         $response = new Response();
         $response->setHeader('Access-Control-Request-Method', 'POST');
         $response->setHeader('Access-Control-Request-Headers', 'Authorization');
-        $response->setHeader('Access-Control-Allow-Origin', $origin);
+#        $response->setHeader('Access-Control-Allow-Origin', $origin);
 
         return $response;
     }
