@@ -199,8 +199,8 @@ class PhubbleService extends Service
 #            $origin = '*';
 #        }
         $response = new Response();
-        $response->setHeader('Access-Control-Request-Method', 'POST');
-        $response->setHeader('Access-Control-Request-Headers', 'Authorization');
+        $response->setHeader('Access-Control-Allow-Methods', 'POST');
+        $response->setHeader('Access-Control-Allow-Headers', 'Authorization');
 #        $response->setHeader('Access-Control-Allow-Origin', $origin);
 
         return $response;
