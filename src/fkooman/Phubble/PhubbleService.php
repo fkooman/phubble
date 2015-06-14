@@ -180,6 +180,30 @@ class PhubbleService extends Service
                 'fkooman\Rest\Plugin\Bearer\BearerAuthentication' => array('enabled' => true),
             )
         );
+
+        $this->options(
+            '/:space/_micropub',
+            function (Request $request, $space) {
+                return $this->optionsMicropub($request, $space);
+            },
+            array(
+                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array('enabled' => false),
+            )
+        );
+    }
+
+    public function optionsMicropub(Request $request, $space)
+    {
+        $origin = $request->getHeader('Origin');
+        if (null === $origin) {
+            $origin = '*';
+        }
+        $response = new Response();
+        $response->setHeader('Access-Control-Request-Method', 'POST');
+        $response->setHeader('Access-Control-Request-Headers', 'Authorization');
+        $response->setHeader('Access-Control-Allow-Origin', $origin);
+
+        return $response;
     }
 
     public function addSpace(Request $request, $indieInfo)
