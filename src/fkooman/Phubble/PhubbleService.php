@@ -201,6 +201,10 @@ class PhubbleService extends Service
         $response = new Response();
         $response->setHeader('Access-Control-Allow-Methods', 'POST');
         $response->setHeader('Access-Control-Allow-Headers', 'Authorization');
+        $response->setHeader('Access-Control-Expose-Headers', 'Location');
+
+        // allow the location header to be passed to the browser
+        //$response->setHeader('XXX-Headers', 'Location');
 #        $response->setHeader('Access-Control-Allow-Origin', $origin);
 
         return $response;
