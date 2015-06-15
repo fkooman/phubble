@@ -6,8 +6,8 @@
     {% else %}
         <title>Phubble</title>
     {% endif %}
-    <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/normalize.css">
-    <link rel="stylesheet" type="text/css" href="{{ rootFolder|e }}css/style.css">
+    <link rel="stylesheet" type="text/css" href="{{ root|e }}css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="{{ root|e }}css/style.css">
     {% if space is defined and not message is defined %}
         <link rel="micropub" href="{{ rootUrl|e }}{{ space.getId}}/_micropub">
         <link rel="authorization_endpoint" href="{{ authorizationEndpoint|e }}">

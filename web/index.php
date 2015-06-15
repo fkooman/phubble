@@ -47,7 +47,6 @@ $templateManager = new TemplateManager($iniReader->v('templateCache', false, nul
 $templateManager->setGlobalVariables(
     array(
         'root' => $request->getUrl()->getRoot(),
-        'rootFolder' => $request->getUrl()->getRootFolder(),
         'rootUrl' => $request->getUrl()->getRootUrl(),
         'authorizationEndpoint' => $iniReader->v('Discovery', 'authorization_endpoint'),
         'tokenEndpoint' => $iniReader->v('Discovery', 'token_endpoint'),
