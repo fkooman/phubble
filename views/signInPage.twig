@@ -22,7 +22,7 @@ You are already logged in as <code>{{ indieInfo.getUserId|e }}</code>.
 
             <form class="authenticate" method="post" action="{{ root|e }}_indieauth/auth">
                 <label for="me">https://</label><input id="me" required type="text" name="me" placeholder="example.org">
-                <input type="hidden" name="redirect_to" value="{{ root|e }}_my_spaces/">
+                <input type="hidden" name="redirect_to" value="{{ rootUrl|e }}_my_spaces/">
                 <input class="info" type="submit" value="Sign In">
             </form>
         {% endif %}
