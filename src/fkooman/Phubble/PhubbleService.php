@@ -170,17 +170,12 @@ class PhubbleService extends Service
             }
         );
 
-        // FIXME: require Bearer here...
+        // Both IndieAuth and Bearer are allowed here... is that a good idea?
         $this->post(
             '/:space/_micropub',
-            function (Request $request, UserInfoInterface $tokenInfo, $space) {
-                return $this->micropubMessage($request, $tokenInfo, $space);
+            function (Request $request, UserInfoInterface $userInfo, $space) {
+                return $this->micropubMessage($request, $userInfo, $space);
             }
-#            array(
-#                'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
-#                    //'requireAuth' => false,
-#                ),
-#            )
         );
 
         $this->options(
@@ -438,11 +433,11 @@ class PhubbleService extends Service
         return new RedirectResponse($request->getUrl()->toString(), 302);
     }
 
-    public function micropubMessage(Request $request, UserInfoInterface $tokenInfo, $spaceId)
+    public function micropubMessage(Request $request, UserInfoInterface $userInfo, $spaceId)
     {
         $space = $this->db->getSpace($spaceId);
         $spaceAcl = $this->getSpaceAcl($space);
-        $userId = $tokenInfo->get('sub');
+        $userId = $userInfo->getUserId();
 
         if (!in_array($userId, $spaceAcl)) {
             throw new ForbiddenException('user not allowed to post in this space');
