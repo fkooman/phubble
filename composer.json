@@ -17,9 +17,9 @@
         "ezyang/htmlpurifier": "~4.6",
         "fkooman/ini": "~0.2.0",
         "fkooman/json": "~0.6.0",
-        "fkooman/rest": "dev-develop",
-        "fkooman/rest-plugin-bearer": "dev-develop",
-        "fkooman/rest-plugin-indieauth": "dev-develop",
+        "fkooman/rest": "dev-master",
+        "fkooman/rest-plugin-bearer": "dev-master",
+        "fkooman/rest-plugin-indieauth": "dev-master",
         "php": ">= 5.4",
         "twig/twig": "~1.15"
     }
