@@ -26,6 +26,7 @@ use fkooman\Phubble\TemplateManager;
 use fkooman\Rest\ExceptionHandler;
 use fkooman\Rest\PluginRegistry;
 use fkooman\Http\Request;
+use fkooman\Rest\Plugin\Authentication\AuthenticationPlugin;
 
 ExceptionHandler::register();
 
@@ -69,11 +70,12 @@ $bearerAuth = new BearerAuthentication(
         'token_endpoint' => $iniReader->v('Discovery', 'token_endpoint'),
     )
 );
+$indieAuth = new IndieAuthAuthentication(null, array('realm' => 'Phubble'));
+$authenticationPlugin = new AuthenticationPlugin();
+$authenticationPlugin->registerAuthenticationPlugin($indieAuth);
+$authenticationPlugin->registerAuthenticationPlugin($bearerAuth);
 
 $pluginRegistry = new PluginRegistry();
-$pluginRegistry->registerDefaultPlugin(
-   new IndieAuthAuthentication()
-);
-$pluginRegistry->registerOptionalPlugin($bearerAuth);
+$pluginRegistry->registerDefaultPlugin($authenticationPlugin);
 $service->setPluginRegistry($pluginRegistry);
 $service->run($request)->send();

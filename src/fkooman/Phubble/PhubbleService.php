@@ -14,14 +14,14 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 namespace fkooman\Phubble;
 
 use fkooman\Http\Exception\BadRequestException;
 use fkooman\Http\RedirectResponse;
 use fkooman\Http\Request;
 use fkooman\Http\Response;
-use fkooman\Rest\Plugin\Bearer\TokenInfo;
-use fkooman\Rest\Plugin\IndieAuth\IndieInfo;
+use fkooman\Rest\Plugin\Authentication\UserInfoInterface;
 use fkooman\Rest\Service;
 use GuzzleHttp\Client;
 use HTMLPurifier;
@@ -70,11 +70,11 @@ class PhubbleService extends Service
 
         $this->get(
             '/',
-            function (Request $request, IndieInfo $indieInfo = null) {
-                return $this->getIndex($request, $indieInfo);
+            function (Request $request, UserInfoInterface $userInfo = null) {
+                return $this->getIndex($request, $userInfo);
             },
             array(
-                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
+                'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
                     'requireAuth' => false,
                 ),
             )
@@ -82,18 +82,18 @@ class PhubbleService extends Service
 
         $this->post(
             '/',
-            function (Request $request, IndieInfo $indieInfo) {
-                return $this->addSpace($request, $indieInfo);
+            function (Request $request, UserInfoInterface $userInfo) {
+                return $this->addSpace($request, $userInfo);
             }
         );
 
         $this->get(
             '/_public/',
-            function (Request $request, IndieInfo $indieInfo = null) {
-                return $this->getPublicSpaces($request, $indieInfo);
+            function (Request $request, UserInfoInterface $userInfo = null) {
+                return $this->getPublicSpaces($request, $userInfo);
             },
             array(
-                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
+                'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
                     'requireAuth' => false,
                 ),
             )
@@ -101,11 +101,11 @@ class PhubbleService extends Service
 
         $this->get(
             '/_sign_in',
-            function (Request $request, IndieInfo $indieInfo = null) {
-                return $this->getSignInPage($request, $indieInfo);
+            function (Request $request, UserInfoInterface $userInfo = null) {
+                return $this->getSignInPage($request, $userInfo);
             },
             array(
-                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
+                'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
                     'requireAuth' => false,
                 ),
             )
@@ -113,18 +113,18 @@ class PhubbleService extends Service
 
         $this->get(
             '/_my_spaces/',
-            function (Request $request, IndieInfo $indieInfo) {
-                return $this->getMySpaces($request, $indieInfo);
+            function (Request $request, UserInfoInterface $userInfo) {
+                return $this->getMySpaces($request, $userInfo);
             }
         );
 
         $this->get(
             '/:space/',
-            function (Request $request, IndieInfo $indieInfo = null, $space) {
-                return $this->getMessages($request, $indieInfo, $space);
+            function (Request $request, UserInfoInterface $userInfo = null, $space) {
+                return $this->getMessages($request, $userInfo, $space);
             },
             array(
-                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
+                'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
                     'requireAuth' => false,
                 ),
             )
@@ -132,25 +132,25 @@ class PhubbleService extends Service
 
         $this->get(
             '/:space/_edit',
-            function (Request $request, IndieInfo $indieInfo, $space) {
-                return $this->getEditSpace($request, $indieInfo, $space);
+            function (Request $request, UserInfoInterface $userInfo, $space) {
+                return $this->getEditSpace($request, $userInfo, $space);
             }
         );
 
         $this->post(
             '/:space/_edit',
-            function (Request $request, IndieInfo $indieInfo, $space) {
-                return $this->postEditSpace($request, $indieInfo, $space);
+            function (Request $request, UserInfoInterface $userInfo, $space) {
+                return $this->postEditSpace($request, $userInfo, $space);
             }
         );
 
         $this->get(
             '/:space/:id',
-            function (Request $request, IndieInfo $indieInfo = null, $space, $id) {
-                return $this->getMessage($request, $indieInfo, $space, $id);
+            function (Request $request, UserInfoInterface $userInfo = null, $space, $id) {
+                return $this->getMessage($request, $userInfo, $space, $id);
             },
             array(
-                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array(
+                'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
                     'requireAuth' => false,
                 ),
             )
@@ -158,27 +158,29 @@ class PhubbleService extends Service
 
         $this->delete(
             '/:space/:id',
-            function (Request $request, IndieInfo $indieInfo, $space, $id) {
-                return $this->deleteMessage($request, $indieInfo, $space, $id);
+            function (Request $request, UserInfoInterface $userInfo, $space, $id) {
+                return $this->deleteMessage($request, $userInfo, $space, $id);
             }
         );
 
         $this->post(
             '/:space/',
-            function (Request $request, IndieInfo $indieInfo, $space) {
-                return $this->postMessage($request, $indieInfo, $space);
+            function (Request $request, UserInfoInterface $userInfo, $space) {
+                return $this->postMessage($request, $userInfo, $space);
             }
         );
 
+        // FIXME: require Bearer here...
         $this->post(
             '/:space/_micropub',
-            function (Request $request, TokenInfo $tokenInfo, $space) {
+            function (Request $request, UserInfoInterface $tokenInfo, $space) {
                 return $this->micropubMessage($request, $tokenInfo, $space);
-            },
-            array(
-                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array('enabled' => false),
-                'fkooman\Rest\Plugin\Bearer\BearerAuthentication' => array('enabled' => true),
-            )
+            }
+#            array(
+#                'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
+#                    //'requireAuth' => false,
+#                ),
+#            )
         );
 
         $this->options(
@@ -187,7 +189,9 @@ class PhubbleService extends Service
                 return $this->optionsMicropub($request, $space);
             },
             array(
-                'fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication' => array('enabled' => false),
+                'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
+                    'enabled' => false,
+                ),
             )
         );
     }
@@ -210,20 +214,20 @@ class PhubbleService extends Service
         return $response;
     }
 
-    public function addSpace(Request $request, $indieInfo)
+    public function addSpace(Request $request, $userInfo)
     {
         $id = $request->getPostParameter('space');
-        $owner = $indieInfo->getUserId();
+        $owner = $userInfo->getUserId();
         $space = new Space($id, $owner, false);
         $this->db->addSpace($space);
 
         return new RedirectResponse($request->getUrl()->getRootUrl().$id.'/', 302);
     }
 
-    public function getEditSpace(Request $request, IndieInfo $indieInfo, $spaceId)
+    public function getEditSpace(Request $request, UserInfoInterface $userInfo, $spaceId)
     {
         $space = $this->db->getSpace($spaceId);
-        $userId = $indieInfo->getUserId();
+        $userId = $userInfo->getUserId();
 
         if ($space->getOwner() !== $userId) {
             throw new ForbiddenException('not allowed to edit this space');
@@ -233,15 +237,15 @@ class PhubbleService extends Service
             'editSpacePage',
             array(
                 'space' => $space,
-                'indieInfo' => $indieInfo,
+                'indieInfo' => $userInfo,
             )
         );
     }
 
-    public function postEditSpace(Request $request, IndieInfo $indieInfo, $spaceId)
+    public function postEditSpace(Request $request, UserInfoInterface $userInfo, $spaceId)
     {
         $space = $this->db->getSpace($spaceId);
-        $userId = $indieInfo->getUserId();
+        $userId = $userInfo->getUserId();
 
         if ($space->getOwner() !== $userId) {
             throw new ForbiddenException('not allowed to edit this space');
@@ -255,7 +259,7 @@ class PhubbleService extends Service
         return new RedirectResponse($request->getUrl()->getRootUrl().$space->getId().'/', 302);
     }
 
-    public function getPublicSpaces(Request $request, $indieInfo)
+    public function getPublicSpaces(Request $request, $userInfo)
     {
         $publicSpaces = $this->db->getPublicSpaces();
 
@@ -263,22 +267,22 @@ class PhubbleService extends Service
             'publicSpacesPage',
             array(
                 'publicSpaces' => $publicSpaces,
-                'indieInfo' => $indieInfo,
+                'indieInfo' => $userInfo,
             )
         );
     }
 
-    public function getSignInPage(Request $request, $indieInfo)
+    public function getSignInPage(Request $request, $userInfo)
     {
         return $this->templateManager->render(
             'signInPage',
             array(
-                'indieInfo' => $indieInfo,
+                'indieInfo' => $userInfo,
             )
         );
     }
 
-    public function getMySpaces(Request $request, $indieInfo)
+    public function getMySpaces(Request $request, $userInfo)
     {
         $publicSpaces = $this->db->getPublicSpaces();
         $secretSpaces = $this->db->getSecretSpaces();
@@ -287,23 +291,23 @@ class PhubbleService extends Service
         $memberSpaces = array();
 
         foreach ($publicSpaces as $s) {
-            if ($indieInfo->getUserId() === $s->getOwner()) {
+            if ($userInfo->getUserId() === $s->getOwner()) {
                 $mySpaces[] = $s;
             } else {
                 // are we a member?
                 $spaceAcl = $this->getSpaceAcl($s);
-                if (in_array($indieInfo->getUserId(), $spaceAcl)) {
+                if (in_array($userInfo->getUserId(), $spaceAcl)) {
                     $memberSpaces[] = $s;
                 }
             }
         }
         foreach ($secretSpaces as $s) {
-            if ($indieInfo->getUserId() === $s->getOwner()) {
+            if ($userInfo->getUserId() === $s->getOwner()) {
                 $mySpaces[] = $s;
             } else {
                 // are we a member?
                 $spaceAcl = $this->getSpaceAcl($s);
-                if (in_array($indieInfo->getUserId(), $spaceAcl)) {
+                if (in_array($userInfo->getUserId(), $spaceAcl)) {
                     $memberSpaces[] = $s;
                 }
             }
@@ -314,29 +318,29 @@ class PhubbleService extends Service
             array(
                 'memberSpaces' => $memberSpaces,
                 'mySpaces' => $mySpaces,
-                'indieInfo' => $indieInfo,
+                'indieInfo' => $userInfo,
             )
         );
     }
 
-    public function getIndex(Request $request, $indieInfo)
+    public function getIndex(Request $request, $userInfo)
     {
         return $this->templateManager->render(
             'indexPage',
             array(
-                'indieInfo' => $indieInfo,
+                'indieInfo' => $userInfo,
             )
         );
     }
 
-    public function getMessages(Request $request, $indieInfo, $spaceId)
+    public function getMessages(Request $request, $userInfo, $spaceId)
     {
         $space = $this->db->getSpace($spaceId);
         $messages = $this->db->getMessages($space);
         $canPost = false;
-        if (null !== $indieInfo) {
+        if (null !== $userInfo) {
             $spaceAcl = $this->getSpaceAcl($space);
-            if (in_array($indieInfo->getUserId(), $spaceAcl)) {
+            if (in_array($userInfo->getUserId(), $spaceAcl)) {
                 $canPost = true;
             }
         }
@@ -350,7 +354,7 @@ class PhubbleService extends Service
             $this->templateManager->render(
                 'messagesPage',
                 array(
-                    'indieInfo' => $indieInfo,
+                    'indieInfo' => $userInfo,
                     'space' => $space,
                     'messages' => $messages,
                     'canPost' => $canPost,
@@ -362,15 +366,15 @@ class PhubbleService extends Service
         return $response;
     }
 
-    public function getMessage(Request $request, $indieInfo, $spaceId, $id)
+    public function getMessage(Request $request, $userInfo, $spaceId, $id)
     {
         $space = $this->db->getSpace($spaceId);
         $message = $this->db->getMessage($space, $id);
 
         $canPost = false;
-        if (null !== $indieInfo) {
+        if (null !== $userInfo) {
             $spaceAcl = $this->getSpaceAcl($space);
-            if (in_array($indieInfo->getUserId(), $spaceAcl)) {
+            if (in_array($userInfo->getUserId(), $spaceAcl)) {
                 $canPost = true;
             }
         }
@@ -386,7 +390,7 @@ class PhubbleService extends Service
                 array(
                     'space' => $space,
                     'message' => $message,
-                    'indieInfo' => $indieInfo,
+                    'indieInfo' => $userInfo,
                 )
             )
         );
@@ -394,11 +398,11 @@ class PhubbleService extends Service
         return $response;
     }
 
-    public function deleteMessage(Request $request, IndieInfo $indieInfo, $spaceId, $id)
+    public function deleteMessage(Request $request, UserInfoInterface $userInfo, $spaceId, $id)
     {
         $space = $this->db->getSpace($spaceId);
         $spaceAcl = $this->getSpaceAcl($space);
-        $userId = $indieInfo->getUserId();
+        $userId = $userInfo->getUserId();
 
         if (!in_array($userId, $spaceAcl)) {
             throw new ForbiddenException('not allowed to delete this message');
@@ -414,11 +418,11 @@ class PhubbleService extends Service
         return new RedirectResponse($request->getUrl()->getRootUrl().$space->getId().'/', 302);
     }
 
-    public function postMessage(Request $request, IndieInfo $indieInfo, $spaceId)
+    public function postMessage(Request $request, UserInfoInterface $userInfo, $spaceId)
     {
         $space = $this->db->getSpace($spaceId);
         $spaceAcl = $this->getSpaceAcl($space);
-        $userId = $indieInfo->getUserId();
+        $userId = $userInfo->getUserId();
 
         if (!in_array($userId, $spaceAcl)) {
             throw new ForbiddenException('not allowed to delete this message');
@@ -434,7 +438,7 @@ class PhubbleService extends Service
         return new RedirectResponse($request->getUrl()->toString(), 302);
     }
 
-    public function micropubMessage(Request $request, TokenInfo $tokenInfo, $spaceId)
+    public function micropubMessage(Request $request, UserInfoInterface $tokenInfo, $spaceId)
     {
         $space = $this->db->getSpace($spaceId);
         $spaceAcl = $this->getSpaceAcl($space);
