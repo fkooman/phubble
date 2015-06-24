@@ -27,6 +27,7 @@ use fkooman\Rest\ExceptionHandler;
 use fkooman\Rest\PluginRegistry;
 use fkooman\Http\Request;
 use fkooman\Rest\Plugin\Authentication\AuthenticationPlugin;
+use fkooman\Phubble\AclFetcher;
 
 ExceptionHandler::register();
 
@@ -54,9 +55,10 @@ $templateManager->setGlobalVariables(
     )
 );
 
-$aclFile = $iniReader->v('Acl', 'aclFile');
+//$aclFile = $iniReader->v('Acl', 'aclFile');
+$aclFetcher = new AclFetcher($iniReader->v('Acl', 'aclPath'));
 
-$service = new PhubbleService($pdoStorage, $aclFile, $templateManager);
+$service = new PhubbleService($pdoStorage, $aclFetcher, $templateManager);
 
 $bearerAuth = new BearerAuthentication(
     new IntrospectionBearerValidator(

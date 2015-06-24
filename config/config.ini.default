@@ -2,7 +2,7 @@
 ;templateCache = "/var/lib/phubble/tpl"
 
 [Acl]
-aclFile = "/etc/phubble/acl.json"
+aclPath = "/var/lib/phubble/acl"
 
 [Discovery]
 authorization_endpoint = "https://indiecert.net/auth"

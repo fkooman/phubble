@@ -27,31 +27,30 @@ use GuzzleHttp\Client;
 use HTMLPurifier;
 use HTMLPurifier_Config;
 use fkooman\Http\Exception\ForbiddenException;
-use fkooman\Json\Json;
 
 class PhubbleService extends Service
 {
-    /** @var fkooman\Phubble\PdoStorage */
+    /** @var PdoStorage */
     private $db;
 
-    /** @var string */
-    private $aclFile;
+    /** @var AclFetcher */
+    private $aclFetcher;
 
-    /** @var GuzzleHttp\Client */
+    /** @var \GuzzleHttp\Client */
     private $client;
 
-    /** @var fkooman\IndieCert\IO */
+    /** @var IO */
     private $io;
 
-    /** @var fkooman\IndieCert\TemplateManager */
+    /** @var TemplateManager */
     private $templateManager;
 
-    public function __construct(PdoStorage $db, $aclFile, TemplateManager $templateManager = null, Client $client = null, IO $io = null)
+    public function __construct(PdoStorage $db, AclFetcher $aclFetcher, TemplateManager $templateManager = null, Client $client = null, IO $io = null)
     {
         parent::__construct();
 
         $this->db = $db;
-        $this->aclFile = $aclFile;
+        $this->aclFetcher = $aclFetcher;
 
         if (null === $templateManager) {
             $templateManager = new TemplateManager();
@@ -264,6 +263,9 @@ class PhubbleService extends Service
         $space->setSecret('on' === $request->getPostParameter('secret') ? true : false);
 
         $this->db->updateSpace($space);
+
+        // retrieve/update the ACL for this particular space
+        $this->aclFetcher->fetchAcl($space->getAcl());
 
         return new RedirectResponse($request->getUrl()->getRootUrl().$space->getId().'/', 302);
     }
@@ -483,16 +485,18 @@ class PhubbleService extends Service
 
     private function getSpaceAcl(Space $space)
     {
-        $spaceAcl = array();
-        $aclData = Json::decodeFile($this->aclFile);
-        if (array_key_exists($space->getId(), $aclData)) {
-            $spaceAcl = $aclData[$space->getId()];
+        $spaceAcl = array(
+            $space->getOwner(),
+        );
+
+        if (null === $space->getAcl()) {
+            // this space has no ACL defined
+            return $spaceAcl;
         }
 
-        // add the owner to it as well
-        $spaceAcl[] = $space->getOwner();
+        $aclData = $this->aclFetcher->getAcl($space->getAcl());
 
-        return $spaceAcl;
+        return array_values(array_merge($spaceAcl, $aclData['members']));
     }
 
     private function validateMessageBody($messageBody)
