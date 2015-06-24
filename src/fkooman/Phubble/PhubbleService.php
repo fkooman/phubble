@@ -80,6 +80,18 @@ class PhubbleService extends Service
             )
         );
 
+        $this->get(
+            '/faq',
+            function (Request $request, UserInfoInterface $userInfo = null) {
+                return $this->getFaq($request, $userInfo);
+            },
+            array(
+                'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
+                    'requireAuth' => false,
+                ),
+            )
+        );
+
         $this->post(
             '/',
             function (Request $request, UserInfoInterface $userInfo) {
@@ -213,7 +225,8 @@ class PhubbleService extends Service
     {
         $id = $request->getPostParameter('space');
         $owner = $userInfo->getUserId();
-        $space = new Space($id, $owner, false);
+        $acl = null;    // no ACL by default
+        $space = new Space($id, $owner, $acl, false);
         $this->db->addSpace($space);
 
         return new RedirectResponse($request->getUrl()->getRootUrl().$id.'/', 302);
@@ -247,6 +260,7 @@ class PhubbleService extends Service
         }
 
         $space->setOwner($request->getPostParameter('owner'));
+        $space->setAcl($request->getPostParameter('acl'));
         $space->setSecret('on' === $request->getPostParameter('secret') ? true : false);
 
         $this->db->updateSpace($space);
@@ -322,6 +336,16 @@ class PhubbleService extends Service
     {
         return $this->templateManager->render(
             'indexPage',
+            array(
+                'indieInfo' => $userInfo,
+            )
+        );
+    }
+
+    public function getFaq(Request $request, $userInfo)
+    {
+        return $this->templateManager->render(
+            'faqPage',
             array(
                 'indieInfo' => $userInfo,
             )

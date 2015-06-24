@@ -19,6 +19,9 @@ anymore!
                 <label for="owner">Owner</label><input id="owner" type="text" name="owner" value="{{ space.getOwner|e }}">
             </div>
             <div>
+                <label for="acl">Group ACL (see <a href="{{ root|e}}faq#acl">FAQ</a>)</label><input id="acl" type="text" name="acl" value="{{ space.acl|e }}">
+            </div>
+            <div>
                 {% if space.getSecret %}
                     <label><input name="secret" type="checkbox" checked="checked"> Secret</label>
                 {% else %}

@@ -39,12 +39,13 @@ class PdoStorage
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'INSERT INTO %s (id, owner, secret) VALUES(:id, :owner, :secret)',
+                'INSERT INTO %s (id, owner, acl, secret) VALUES(:id, :owner, :acl, :secret)',
                 $this->prefix.'spaces'
             )
         );
         $stmt->bindValue(':id', $space->getId(), PDO::PARAM_STR);
         $stmt->bindValue(':owner', $space->getOwner(), PDO::PARAM_STR);
+        $stmt->bindValue(':acl', $space->getAcl(), PDO::PARAM_STR);
         $stmt->bindValue(':secret', $space->getSecret(), PDO::PARAM_BOOL);
         $stmt->execute();
         if (1 !== $stmt->rowCount()) {
@@ -58,7 +59,7 @@ class PdoStorage
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT id, owner, secret FROM %s WHERE id = :id',
+                'SELECT id, owner, acl, secret FROM %s WHERE id = :id',
                 $this->prefix.'spaces'
             )
         );
@@ -77,12 +78,13 @@ class PdoStorage
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'UPDATE %s SET owner = :owner, secret = :secret WHERE id = :id',
+                'UPDATE %s SET owner = :owner, acl = :acl, secret = :secret WHERE id = :id',
                 $this->prefix.'spaces'
             )
         );
         $stmt->bindValue(':id', $space->getId(), PDO::PARAM_STR);
         $stmt->bindValue(':owner', $space->getOwner(), PDO::PARAM_STR);
+        $stmt->bindValue(':acl', $space->getAcl(), PDO::PARAM_STR);
         $stmt->bindValue(':secret', $space->getSecret(), PDO::PARAM_BOOL);
         $stmt->execute();
 
@@ -95,7 +97,7 @@ class PdoStorage
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT id, owner, secret FROM %s WHERE NOT secret',
+                'SELECT id, owner, acl, secret FROM %s WHERE NOT secret',
                 $this->prefix.'spaces'
             )
         );
@@ -114,7 +116,7 @@ class PdoStorage
     {
         $stmt = $this->db->prepare(
             sprintf(
-                'SELECT id, owner, secret FROM %s WHERE secret',
+                'SELECT id, owner, acl, secret FROM %s WHERE secret',
                 $this->prefix.'spaces'
             )
         );
@@ -213,6 +215,7 @@ class PdoStorage
             'CREATE TABLE IF NOT EXISTS %s (
                 id VARCHAR(64) NOT NULL,
                 owner VARCHAR(255) NOT NULL,
+                acl VARCHAR(255) DEFAULT NULL,
                 secret BOOLEAN NOT NULL,
                 PRIMARY KEY (id)
             )',

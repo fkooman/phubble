@@ -8,12 +8,14 @@ class Space
 {
     private $id;
     private $owner;
+    private $acl;
     private $secret;
 
-    public function __construct($id, $owner, $secret)
+    public function __construct($id, $owner, $acl, $secret)
     {
         $this->id = self::validateString($id);
         $this->owner = self::validateUrl($owner);
+        $this->acl = self::validateUrl($acl);
         $this->secret = self::validateBoolean($secret);
     }
 
@@ -27,9 +29,19 @@ class Space
         return $this->owner;
     }
 
+    public function getAcl()
+    {
+        return $this->acl;
+    }
+
     public function setOwner($owner)
     {
         $this->owner = self::validateString($owner);
+    }
+
+    public function setAcl($acl)
+    {
+        $this->acl = self::validateUrl($acl);
     }
 
     public function getSecret()
@@ -44,10 +56,10 @@ class Space
 
     public static function fromArray(array $a)
     {
-        $requiredKeys = array('id', 'owner', 'secret');
+        $requiredKeys = array('id', 'owner', 'acl', 'secret');
         self::arrayHasKeys($a, $requiredKeys);
 
-        return new self($a['id'], $a['owner'], $a['secret']);
+        return new self($a['id'], $a['owner'], $a['acl'], $a['secret']);
     }
 
     public static function arrayHasKeys(array $a, array $keys)
