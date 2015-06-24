@@ -359,6 +359,9 @@ class PhubbleService extends Service
 
     public function getMessages(Request $request, $userInfo, $spaceId)
     {
+        // FIXME: should throw UnauthorizedException for secret space and no
+        // authentication...
+
         $space = $this->db->getSpace($spaceId);
         $messages = $this->db->getMessages($space);
         $canPost = false;
@@ -392,6 +395,9 @@ class PhubbleService extends Service
 
     public function getMessage(Request $request, $userInfo, $spaceId, $id)
     {
+        // FIXME: should throw UnauthorizedException for secret space and no
+        // authentication...
+
         $space = $this->db->getSpace($spaceId);
         $message = $this->db->getMessage($space, $id);
 
