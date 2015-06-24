@@ -13,10 +13,10 @@ class Space
 
     public function __construct($id, $owner, $acl, $secret)
     {
-        $this->id = self::validateString($id);
-        $this->owner = self::validateUrl($owner);
-        $this->acl = self::validateUrl($acl);
-        $this->secret = self::validateBoolean($secret);
+        $this->id = InputValidation::validateString($id);
+        $this->owner = InputValidation::validateUrl($owner);
+        $this->acl = InputValidation::validateUrl($acl, true);
+        $this->secret = InputValidation::validateBoolean($secret);
     }
 
     public function getId()
@@ -36,12 +36,12 @@ class Space
 
     public function setOwner($owner)
     {
-        $this->owner = self::validateString($owner);
+        $this->owner = InputValidation::validateString($owner);
     }
 
     public function setAcl($acl)
     {
-        $this->acl = self::validateUrl($acl);
+        $this->acl = InputValidation::validateUrl($acl, true);
     }
 
     public function getSecret()
@@ -51,7 +51,7 @@ class Space
 
     public function setSecret($secret)
     {
-        $this->secret = self::validateBoolean($secret);
+        $this->secret = InputValidation::validateBoolean($secret);
     }
 
     public static function fromArray(array $a)
@@ -59,7 +59,7 @@ class Space
         $requiredKeys = array('id', 'owner', 'acl', 'secret');
         self::arrayHasKeys($a, $requiredKeys);
 
-        return new self($a['id'], $a['owner'], $a['acl'], $a['secret']);
+        return new self($a['id'], $a['owner'], $a['acl'], (bool) $a['secret']);
     }
 
     public static function arrayHasKeys(array $a, array $keys)
@@ -71,20 +71,5 @@ class Space
                 );
             }
         }
-    }
-
-    public static function validateString($str)
-    {
-        return $str;
-    }
-
-    public static function validateUrl($url)
-    {
-        return $url;
-    }
-
-    public static function validateBoolean($bool)
-    {
-        return (bool) $bool;
     }
 }

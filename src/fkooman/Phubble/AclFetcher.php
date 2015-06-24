@@ -21,7 +21,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Subscriber\History;
 use GuzzleHttp\Url;
 use RuntimeException;
-use InvalidArgumentException;
 
 /**
  * Retrieve the ACL for a space.
@@ -48,7 +47,7 @@ class AclFetcher
      */
     public function fetchAcl($aclUrl)
     {
-        $aclUrl = self::validateUrl($aclUrl);
+        $aclUrl = InputValidation::validateUrl($aclUrl);
         $aclData = $this->fetchUrl($aclUrl);
         $aclData = self::validateAcl($aclUrl, $aclData);
 
@@ -70,7 +69,7 @@ class AclFetcher
      */
     public function getAcl($aclUrl)
     {
-        $aclUrl = self::validateUrl($aclUrl);
+        $aclUrl = InputValidation::validateUrl($aclUrl);
         $fileName = $this->aclDir.'/'.str_replace('/', '_', $aclUrl);
         $aclJsonData = @file_get_contents($fileName);
         if (false === $aclJsonData) {
@@ -110,20 +109,6 @@ class AclFetcher
         return $response->json();
     }
 
-    public static function validateUrl($urlStr)
-    {
-        if(null !== $urlStr) {
-            if (false === filter_var($urlStr, FILTER_VALIDATE_URL)) {
-                throw new InvalidArgumentException(sprintf('invalid URL "%s"', $urlStr));
-            }
-            if (0 !== stripos($urlStr, 'https://')) {
-                throw new InvalidArgumentException('URL must be a valid https URL');
-            }
-        }
-
-        return $urlStr;
-    }
-
     public static function validateAcl($aclUrl, $aclData)
     {
         $requiredFields = array('id', 'name', 'members');
@@ -146,7 +131,7 @@ class AclFetcher
         }
 
         foreach ($aclData['members'] as $memberUrl) {
-            self::validateUrl($memberUrl);
+            InputValidation::validateUrl($memberUrl);
         }
 
         return $aclData;

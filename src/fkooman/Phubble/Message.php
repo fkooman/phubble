@@ -15,10 +15,10 @@ class Message
     public function __construct(Space $space, $id, $authorId, $messageBody, $postTime)
     {
         $this->space = $space;
-        $this->id = self::validateString($id);
-        $this->authorId = self::validateUrl($authorId);
-        $this->messageBody = self::validateString($messageBody);
-        $this->postTime = self::validateInt($postTime);
+        $this->id = InputValidation::validateString($id);
+        $this->authorId = InputValidation::validateUrl($authorId);
+        $this->messageBody = InputValidation::validateString($messageBody);
+        $this->postTime = InputValidation::validateInt($postTime);
     }
 
     public function getSpace()
@@ -51,7 +51,7 @@ class Message
         $requiredKeys = array('id', 'author_id', 'message_body', 'post_time');
         self::arrayHasKeys($a, $requiredKeys);
 
-        return new self($space, $a['id'], $a['author_id'], $a['message_body'], $a['post_time']);
+        return new self($space, $a['id'], $a['author_id'], $a['message_body'], (int) $a['post_time']);
     }
 
     public static function arrayHasKeys(array $a, array $keys)
@@ -63,25 +63,5 @@ class Message
                 );
             }
         }
-    }
-
-    public static function validateString($str)
-    {
-        return $str;
-    }
-
-    public static function validateUrl($url)
-    {
-        return $url;
-    }
-
-    public static function validateInt($int)
-    {
-        return $int;
-    }
-
-    public static function validateBoolean($bool)
-    {
-        return (bool) $bool;
     }
 }

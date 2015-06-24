@@ -265,7 +265,10 @@ class PhubbleService extends Service
         $this->db->updateSpace($space);
 
         // retrieve/update the ACL for this particular space
-        $this->aclFetcher->fetchAcl($space->getAcl());
+        $aclUrl = $space->getAcl();
+        if (null !== $aclUrl) {
+            $this->aclFetcher->fetchAcl($aclUrl);
+        }
 
         return new RedirectResponse($request->getUrl()->getRootUrl().$space->getId().'/', 302);
     }
