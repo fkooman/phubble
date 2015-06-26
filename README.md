@@ -1,3 +1,5 @@
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/fkooman/phubble/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/fkooman/phubble/?branch=master)
+
 # Introduction
 
 # Development
