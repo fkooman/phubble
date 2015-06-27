@@ -235,6 +235,7 @@ class PhubbleService extends Service
     {
         $space = $this->db->getSpace($spaceId);
         $userId = $userInfo->getUserId();
+        $spaceAcl = $this->getSpaceAcl($space);
 
         if ($space->getOwner() !== $userId) {
             throw new ForbiddenException('not allowed to edit this space');
@@ -245,6 +246,7 @@ class PhubbleService extends Service
             array(
                 'space' => $space,
                 'indieInfo' => $userInfo,
+                'members' => $spaceAcl,
             )
         );
     }

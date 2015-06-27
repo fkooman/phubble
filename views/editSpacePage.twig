@@ -31,6 +31,18 @@ anymore!
             <div>
                 <input type="submit" value="Save">
             </div>
+            {% if members %}
+                <h3>Members</h3>
+                <p>
+This is a list of members based on the retrieved ACL and the current owner of
+the space.
+                </p>
+                <ul>
+                {% for member in members %}
+                    <li><a href="{{ member|e }}">{{ member|e }}</a></li>
+                {% endfor %}
+                </ul>
+            {% endif %}
         </form>
 
         {% include 'footer.twig' %}
