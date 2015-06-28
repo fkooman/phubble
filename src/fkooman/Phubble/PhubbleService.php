@@ -420,7 +420,10 @@ class PhubbleService extends Service
                 )
             )
         );
-        $response->setHeader('Link', sprintf('<%s>; rel="micropub"', $request->getUrl()->getRootUrl().$space->getId().'/_micropub'));
+        $response->addHeader('Link', sprintf('<%s>; rel="micropub"', $request->getUrl()->getRootUrl().$space->getId().'/_micropub'));
+        if (null !== $space->getAcl()) {
+            $response->addHeader('Link', sprintf('<%s>; rel="acl"', $space->getAcl()));
+        }
 
         return $response;
     }
