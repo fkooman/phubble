@@ -190,6 +190,18 @@ class PhubbleService extends Service
         );
 
         $this->options(
+            '/:space/',
+            function (Request $request, $space) {
+                return $this->optionsSpace($request, $space);
+            },
+            array(
+                'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
+                    'enabled' => false,
+                ),
+            )
+        );
+
+        $this->options(
             '/:space/_micropub',
             function (Request $request, $space) {
                 return $this->optionsMicropub($request, $space);
@@ -212,6 +224,24 @@ class PhubbleService extends Service
         $response->setHeader('Access-Control-Allow-Methods', 'POST');
         $response->setHeader('Access-Control-Allow-Headers', 'Authorization');
         $response->setHeader('Access-Control-Expose-Headers', 'Location');
+
+        // allow the location header to be passed to the browser
+        //$response->setHeader('XXX-Headers', 'Location');
+#        $response->setHeader('Access-Control-Allow-Origin', $origin);
+
+        return $response;
+    }
+
+    public function optionsSpace(Request $request, $space)
+    {
+        #        $origin = $request->getHeader('Origin');
+#        if(null === $origin) {
+#            $origin = '*';
+#        }
+        $response = new Response();
+        $response->setHeader('Access-Control-Allow-Methods', 'GET');
+        $response->setHeader('Access-Control-Allow-Headers', 'Authorization');
+        //$response->setHeader('Access-Control-Expose-Headers', 'Location');
 
         // allow the location header to be passed to the browser
         //$response->setHeader('XXX-Headers', 'Location');
