@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ca5a2a7d811a87655f279fdfa60f0f36",
+    "hash": "9279771f9f9dfc54adbfe2c29ed5ece5",
     "packages": [
         {
             "name": "ezyang/htmlpurifier",
@@ -173,16 +173,16 @@
         },
         {
             "name": "fkooman/rest-plugin-bearer",
-            "version": "0.5.0",
+            "version": "0.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fkooman/php-lib-rest-plugin-bearer.git",
-                "reference": "8001f1b8bb9f3ab29b19db02299897ed4ee7d0d2"
+                "reference": "214d7cd51084f98403e367f3aaccb9bdd9180784"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-rest-plugin-bearer/zipball/8001f1b8bb9f3ab29b19db02299897ed4ee7d0d2",
-                "reference": "8001f1b8bb9f3ab29b19db02299897ed4ee7d0d2",
+                "url": "https://api.github.com/repos/fkooman/php-lib-rest-plugin-bearer/zipball/214d7cd51084f98403e367f3aaccb9bdd9180784",
+                "reference": "214d7cd51084f98403e367f3aaccb9bdd9180784",
                 "shasum": ""
             },
             "require": {
@@ -208,7 +208,7 @@
                 }
             ],
             "description": "Bearer (OAuth) Authentication plugin for fkooman/rest",
-            "time": "2015-06-28 11:51:45"
+            "time": "2015-06-29 18:56:32"
         },
         {
             "name": "fkooman/rest-plugin-indieauth",

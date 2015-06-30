@@ -1,6 +1,9 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/fkooman/phubble/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/fkooman/phubble/?branch=master)
 
 # Introduction
+Phubble is a simple microblogging service for communities. It features group
+spaces that can be made secret so they can only accessed by members of the 
+group.
 
 # Development
 We assume that your web server runs under the `apache` user and your user 
