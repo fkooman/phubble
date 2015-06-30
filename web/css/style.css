@@ -165,12 +165,12 @@ table.message th {
 }
 
 table.message th.owner {
-    background-color: #006633;
+    background-color: #cfc;
     color: #fff;
 }
 
 table.message th.owner a {
-    color: #fff;
+    color: #000;
 }
 
 table.message td {
