@@ -5,6 +5,10 @@ Phubble is a simple microblogging service for communities. It features group
 spaces that can be made secret so they can only accessed by members of the 
 group.
 
+# Installation
+You can find RPM packages in 
+[this](https://copr.fedoraproject.org/coprs/fkooman/phubble/) COPR repository.
+
 # Development
 We assume that your web server runs under the `apache` user and your user 
 account is called `fkooman` in group `fkooman`.
