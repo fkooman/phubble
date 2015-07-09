@@ -14,12 +14,19 @@
     "license": "AGPL-3.0",
     "name": "fkooman/phubble",
     "require": {
+        "ext-date": "*",
+        "ext-filter": "*",
+        "ext-json": "*",
+        "ext-openssl": "*",
+        "ext-pdo": "*",
+        "ext-spl": "*",
         "ezyang/htmlpurifier": "~4.6",
         "fkooman/ini": "~0.2.0",
         "fkooman/json": "~0.6.0",
         "fkooman/rest": "~0.9.0",
-        "fkooman/rest-plugin-bearer": "~0.5.1",
-        "fkooman/rest-plugin-indieauth": "~0.5.0",
+        "fkooman/rest-plugin-bearer": "~0.5.3",
+        "fkooman/rest-plugin-indieauth": "~0.5.1",
+        "guzzlehttp/guzzle": "~5.3",
         "php": ">= 5.4",
         "twig/twig": "~1.15"
     }

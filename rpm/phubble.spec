@@ -15,10 +15,16 @@ Source2:    phubble-autoload.php
 
 BuildArch:  noarch
 
-Requires:   php >= 5.4
-Requires:   php-openssl
-Requires:   php-pdo
 Requires:   httpd
+
+Requires:   php(language) >= 5.4
+Requires:   php-date
+Requires:   php-filter
+Requires:   php-json
+Requires:   php-openssl
+Requires:   php-spl
+Requires:   php-standard
+Requires:   php-pdo
 
 Requires:   php-composer(fkooman/json) >= 0.6.0
 Requires:   php-composer(fkooman/json) < 0.7.0
@@ -26,18 +32,16 @@ Requires:   php-composer(fkooman/ini) >= 0.2.0
 Requires:   php-composer(fkooman/ini) < 0.3.0
 Requires:   php-composer(fkooman/rest) >= 0.9.0
 Requires:   php-composer(fkooman/rest) < 0.10.0
-Requires:   php-composer(fkooman/rest-plugin-indieauth) >= 0.5.0
+Requires:   php-composer(fkooman/rest-plugin-indieauth) >= 0.5.1
 Requires:   php-composer(fkooman/rest-plugin-indieauth) < 0.6.0
-Requires:   php-composer(fkooman/rest-plugin-bearer) >= 0.5.1
+Requires:   php-composer(fkooman/rest-plugin-bearer) >= 0.5.3
 Requires:   php-composer(fkooman/rest-plugin-bearer) < 0.6.0
 Requires:   php-pear(pear.twig-project.org/Twig) >= 1.15
 Requires:   php-pear(pear.twig-project.org/Twig) < 2.0
+Requires:   php-composer(guzzlehttp/guzzle) >= 5.3
+Requires:   php-composer(guzzlehttp/guzzle) < 6.0
 Requires:   php-pear(htmlpurifier/htmlpurifier) >= 4.6.0
 Requires:   php-pear(htmlpurifier/htmlpurifier) < 5
-
-#Starting F21 we can use the composer dependency for Symfony
-#Requires:   php-composer(symfony/classloader) >= 2.3.9
-#Requires:   php-composer(symfony/classloader) < 3.0
 Requires:   php-pear(pear.symfony.com/ClassLoader) >= 2.3.9
 Requires:   php-pear(pear.symfony.com/ClassLoader) < 3.0
 
@@ -100,7 +104,8 @@ fi
 %{_datadir}/phubble/views
 %{_datadir}/phubble/config
 %dir %attr(0700,apache,apache) %{_localstatedir}/lib/phubble
-%doc CHANGES.md README.md agpl-3.0.txt composer.json config/
+%doc CHANGES.md README.md composer.json config/
+%license agpl-3.0.txt
 
 %changelog
 * Tue Jun 30 2015 François Kooman <fkooman@tuxed.net> - 0.1.0-1
