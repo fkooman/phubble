@@ -2,7 +2,7 @@
 %global github_name      phubble
 
 Name:       phubble
-Version:    0.1.0
+Version:    0.1.1
 Release:    1%{?dist}
 Summary:    Simple Microblogging Platform for Communities
 
@@ -108,5 +108,8 @@ fi
 %license agpl-3.0.txt
 
 %changelog
+* Thu Jul 09 2015 François Kooman <fkooman@tuxed.net> - 0.1.1-1
+- update to 0.1.1
+
 * Tue Jun 30 2015 François Kooman <fkooman@tuxed.net> - 0.1.0-1
 - initial package
