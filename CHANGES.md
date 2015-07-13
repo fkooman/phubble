@@ -1,5 +1,8 @@
 # Changes
 
+## 0.1.2
+- update dependencies
+
 ## 0.1.1
 - update dependencies
 
