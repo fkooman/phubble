@@ -18,18 +18,14 @@ require_once dirname(__DIR__).'/vendor/autoload.php';
 
 use fkooman\Ini\IniReader;
 use fkooman\Phubble\PhubbleService;
-use fkooman\Rest\Plugin\IndieAuth\IndieAuthAuthentication;
-use fkooman\Rest\Plugin\Bearer\BearerAuthentication;
-use fkooman\Rest\Plugin\Bearer\IntrospectionBearerValidator;
+use fkooman\Rest\Plugin\Authentication\IndieAuth\IndieAuthAuthentication;
+use fkooman\Rest\Plugin\Authentication\Bearer\BearerAuthentication;
+use fkooman\Rest\Plugin\Authentication\Bearer\IntrospectionBearerValidator;
 use fkooman\Phubble\PdoStorage;
 use fkooman\Phubble\TemplateManager;
-use fkooman\Rest\ExceptionHandler;
-use fkooman\Rest\PluginRegistry;
 use fkooman\Http\Request;
 use fkooman\Rest\Plugin\Authentication\AuthenticationPlugin;
 use fkooman\Phubble\AclFetcher;
-
-ExceptionHandler::register();
 
 $iniReader = IniReader::fromFile(
     dirname(__DIR__).'/config/config.ini'
@@ -55,7 +51,6 @@ $templateManager->setGlobalVariables(
     )
 );
 
-//$aclFile = $iniReader->v('Acl', 'aclFile');
 $aclFetcher = new AclFetcher($iniReader->v('Acl', 'aclPath'));
 
 $service = new PhubbleService($pdoStorage, $aclFetcher, $templateManager);
@@ -73,11 +68,9 @@ $bearerAuth = new BearerAuthentication(
     )
 );
 $indieAuth = new IndieAuthAuthentication(null, array('realm' => 'Phubble'));
-$authenticationPlugin = new AuthenticationPlugin();
-$authenticationPlugin->registerAuthenticationPlugin($indieAuth);
-$authenticationPlugin->registerAuthenticationPlugin($bearerAuth);
 
-$pluginRegistry = new PluginRegistry();
-$pluginRegistry->registerDefaultPlugin($authenticationPlugin);
-$service->setPluginRegistry($pluginRegistry);
+$authenticationPlugin = new AuthenticationPlugin();
+$authenticationPlugin->register($indieAuth, 'user');
+$authenticationPlugin->register($bearerAuth, 'micropub');
+$service->getPluginRegistry()->registerDefaultPlugin($authenticationPlugin);
 $service->run($request)->send();

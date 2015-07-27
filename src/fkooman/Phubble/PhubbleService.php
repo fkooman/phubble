@@ -74,7 +74,7 @@ class PhubbleService extends Service
             },
             array(
                 'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
-                    'requireAuth' => false,
+                    'require' => false,
                 ),
             )
         );
@@ -86,7 +86,7 @@ class PhubbleService extends Service
             },
             array(
                 'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
-                    'requireAuth' => false,
+                    'require' => false,
                 ),
             )
         );
@@ -105,7 +105,7 @@ class PhubbleService extends Service
             },
             array(
                 'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
-                    'requireAuth' => false,
+                    'require' => false,
                 ),
             )
         );
@@ -117,7 +117,7 @@ class PhubbleService extends Service
             },
             array(
                 'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
-                    'requireAuth' => false,
+                    'require' => false,
                 ),
             )
         );
@@ -136,7 +136,7 @@ class PhubbleService extends Service
             },
             array(
                 'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
-                    'requireAuth' => false,
+                    'require' => false,
                 ),
             )
         );
@@ -162,7 +162,7 @@ class PhubbleService extends Service
             },
             array(
                 'fkooman\Rest\Plugin\Authentication\AuthenticationPlugin' => array(
-                    'requireAuth' => false,
+                    'require' => false,
                 ),
             )
         );
