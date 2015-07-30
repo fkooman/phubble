@@ -32,12 +32,12 @@ Requires:   php-composer(fkooman/ini) >= 1.0.0
 Requires:   php-composer(fkooman/ini) < 2.0.0
 Requires:   php-composer(fkooman/rest) >= 1.0.1
 Requires:   php-composer(fkooman/rest) < 2.0.0
+Requires:   php-composer(fkooman/tpl) >= 1.0.0
+Requires:   php-composer(fkooman/tpl) < 2.0.0
 Requires:   php-composer(fkooman/rest-plugin-authentication-indieauth) >= 1.0.0
 Requires:   php-composer(fkooman/rest-plugin-authentication-indieauth) < 2.0.0
 Requires:   php-composer(fkooman/rest-plugin-authentication-bearer) >= 1.0.0
 Requires:   php-composer(fkooman/rest-plugin-authentication-bearer) < 2.0.0
-Requires:   php-pear(pear.twig-project.org/Twig) >= 1.15
-Requires:   php-pear(pear.twig-project.org/Twig) < 2.0
 Requires:   php-composer(guzzlehttp/guzzle) >= 5.3
 Requires:   php-composer(guzzlehttp/guzzle) < 6.0
 Requires:   php-pear(htmlpurifier/htmlpurifier) >= 4.6.0

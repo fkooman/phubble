@@ -27,6 +27,7 @@ use GuzzleHttp\Client;
 use HTMLPurifier;
 use HTMLPurifier_Config;
 use fkooman\Http\Exception\ForbiddenException;
+use fkooman\Tpl\TemplateManagerInterface;
 
 class PhubbleService extends Service
 {
@@ -42,19 +43,15 @@ class PhubbleService extends Service
     /** @var IO */
     private $io;
 
-    /** @var TemplateManager */
+    /** @var \fkooman\Tpl\TemplateManagerInterface */
     private $templateManager;
 
-    public function __construct(PdoStorage $db, AclFetcher $aclFetcher, TemplateManager $templateManager = null, Client $client = null, IO $io = null)
+    public function __construct(PdoStorage $db, AclFetcher $aclFetcher, TemplateManagerInterface $templateManager, Client $client = null, IO $io = null)
     {
         parent::__construct();
 
         $this->db = $db;
         $this->aclFetcher = $aclFetcher;
-
-        if (null === $templateManager) {
-            $templateManager = new TemplateManager();
-        }
         $this->templateManager = $templateManager;
 
         if (null === $client) {

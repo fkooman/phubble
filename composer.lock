@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "41912adbd9a3e46a78554a11b4c3da2a",
+    "hash": "828b6fc514bfc54d5ef3f0382ed57c5c",
     "packages": [
         {
             "name": "ezyang/htmlpurifier",
@@ -306,6 +306,44 @@
             ],
             "description": "IndieAuth plugin for fkooman/rest",
             "time": "2015-07-20 15:51:31"
+        },
+        {
+            "name": "fkooman/tpl",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fkooman/php-lib-tpl.git",
+                "reference": "4a7e2211dd4b214b30b276e0f01724776ffaf955"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fkooman/php-lib-tpl/zipball/4a7e2211dd4b214b30b276e0f01724776ffaf955",
+                "reference": "4a7e2211dd4b214b30b276e0f01724776ffaf955",
+                "shasum": ""
+            },
+            "require": {
+                "ext-spl": "*",
+                "php": ">= 5.3.3",
+                "twig/twig": "^1.18"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "fkooman\\Tpl\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "François Kooman",
+                    "email": "fkooman@tuxed.net"
+                }
+            ],
+            "description": "Simple Template Abstraction Library",
+            "time": "2015-07-30 17:10:24"
         },
         {
             "name": "guzzlehttp/guzzle",

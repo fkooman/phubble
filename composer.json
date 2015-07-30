@@ -26,8 +26,8 @@
         "fkooman/rest": "^1.0.1",
         "fkooman/rest-plugin-authentication-bearer": "^1.0.0",
         "fkooman/rest-plugin-authentication-indieauth": "^1.0.0",
+        "fkooman/tpl": "^1.0.0",
         "guzzlehttp/guzzle": "~5.3",
-        "php": ">= 5.4",
-        "twig/twig": "~1.15"
+        "php": ">= 5.4"
     }
 }

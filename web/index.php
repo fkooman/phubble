@@ -22,10 +22,10 @@ use fkooman\Rest\Plugin\Authentication\IndieAuth\IndieAuthAuthentication;
 use fkooman\Rest\Plugin\Authentication\Bearer\BearerAuthentication;
 use fkooman\Rest\Plugin\Authentication\Bearer\IntrospectionBearerValidator;
 use fkooman\Phubble\PdoStorage;
-use fkooman\Phubble\TemplateManager;
 use fkooman\Http\Request;
 use fkooman\Rest\Plugin\Authentication\AuthenticationPlugin;
 use fkooman\Phubble\AclFetcher;
+use fkooman\Tpl\TwigTemplateManager;
 
 $iniReader = IniReader::fromFile(
     dirname(__DIR__).'/config/config.ini'
@@ -41,8 +41,14 @@ $pdoStorage = new PdoStorage($pdo);
 
 $request = new Request($_SERVER);
 
-$templateManager = new TemplateManager($iniReader->v('templateCache', false, null));
-$templateManager->setGlobalVariables(
+$templateManager = new TwigTemplateManager(
+    array(
+        dirname(__DIR__).'/views',
+        dirname(__DIR__).'/config/views',
+    ),
+    $iniReader->v('templateCache', false, null)
+);
+$templateManager->setDefault(
     array(
         'root' => $request->getUrl()->getRoot(),
         'rootUrl' => $request->getUrl()->getRootUrl(),
