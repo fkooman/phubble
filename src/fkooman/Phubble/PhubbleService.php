@@ -16,21 +16,21 @@
  */
 namespace fkooman\Phubble;
 
+use DateTime;
+use Doctrine\ORM\EntityManager;
 use fkooman\Http\Exception\BadRequestException;
+use fkooman\Http\Exception\ForbiddenException;
 use fkooman\Http\Exception\NotFoundException;
 use fkooman\Http\RedirectResponse;
 use fkooman\Http\Request;
 use fkooman\Http\Response;
+use fkooman\IO\IO;
 use fkooman\Rest\Plugin\Authentication\UserInfoInterface;
 use fkooman\Rest\Service;
-use fkooman\IO\IO;
+use fkooman\Tpl\TemplateManagerInterface;
 use GuzzleHttp\Client;
 use HTMLPurifier;
 use HTMLPurifier_Config;
-use fkooman\Http\Exception\ForbiddenException;
-use fkooman\Tpl\TemplateManagerInterface;
-use Doctrine\ORM\EntityManager;
-use DateTime;
 
 class PhubbleService extends Service
 {
