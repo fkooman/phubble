@@ -177,6 +177,13 @@ class PhubbleService extends Service
             }
         );
 
+        $this->post(
+            '/:space/_add_member',
+            function (Request $request, UserInfoInterface $userInfo, $space) {
+                return $this->addMember($request, $userInfo, $space);
+            }
+        );
+
         // XXX Both IndieAuth and Bearer are allowed here... is that a good idea?
         $this->post(
             '/:space/_micropub',
@@ -214,6 +221,13 @@ class PhubbleService extends Service
     {
         // XXX validate space_name
         $spaceName = $request->getPostParameter('space_name');
+
+        $space = $this->entityManager->getRepository('fkooman\Phubble\Space')
+            ->findOneBy(array('name' => $spaceName));
+        if ($space) {
+            throw new BadRequestException('space with this name already exists');
+        }
+
         $userId = $userInfo->getUserId();
 
         $user = $this->getUser($userId);
@@ -454,24 +468,52 @@ class PhubbleService extends Service
         return $response;
     }
 
-    public function deleteMessage(Request $request, UserInfoInterface $userInfo, $spaceId, $id)
+    public function deleteMessage(Request $request, UserInfoInterface $userInfo, $spaceName, $id)
     {
-        $space = $this->db->getSpace($spaceId);
-        $spaceAcl = $this->getSpaceAcl($space);
+        $space = $this->entityManager->getRepository('fkooman\Phubble\Space')
+            ->findOneBy(array('name' => $spaceName));
+        if (!$space) {
+            throw new NotFoundException('space not found');
+        }
+
+        $message = $this->entityManager->getRepository('fkooman\Phubble\Message')
+            ->findOneBy(array('id' => $id, 'space' => $space));
+        if (!$message) {
+            throw new NotFoundException('message not found');
+        }
         $userId = $userInfo->getUserId();
 
-        if (!in_array($userId, $spaceAcl)) {
-            throw new ForbiddenException('not allowed to delete this message');
+        if (!$space->isMember($userId)) {
+            throw new ForbiddenException('not a member of this space');
         }
 
-        $message = $this->db->getMessage($space, $id);
-        if ($message->getAuthorId() !== $userId) {
-            throw new ForbiddenException('not allowed to delete this message');
+        if ($message->getAuthor()->getName() !== $userId) {
+            throw new ForbiddenException('not the owner of this message');
         }
 
-        $this->db->deleteMessage($message);
+        $this->entityManager->remove($message);
+        $this->entityManager->flush();
 
-        return new RedirectResponse($request->getUrl()->getRootUrl().$space->getId().'/', 302);
+        return new RedirectResponse($request->getUrl()->getRootUrl().$space->getName().'/', 302);
+    }
+
+    public function addMember(Request $request, UserInfoInterface $userInfo, $spaceName)
+    {
+        $space = $this->entityManager->getRepository('fkooman\Phubble\Space')
+            ->findOneBy(array('name' => $spaceName));
+        if (!$space) {
+            throw new NotFoundException('space not found');
+        }
+        $userId = $userInfo->getUserId();
+
+        $userToAdd = $request->getPostParameter('user_id');
+        $user = $this->getUser($userToAdd);
+        $space->addMember($user);
+
+        $this->entityManager->persist($space);
+        $this->entityManager->flush();
+
+        return new RedirectResponse($request->getUrl()->getRootUrl().$space->getName().'/_edit', 302);
     }
 
     public function postMessage(Request $request, UserInfoInterface $userInfo, $spaceName)

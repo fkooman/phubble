@@ -40,7 +40,11 @@ This is a list of members of this space:
                 </ul>
             {% endif %}
         </form>
-
+        <h3>Add Member</h3>
+        <form method="post" class="edit_space" action="_add_member">
+             <label for="add_member">Member</label><input id="add_member" type="text" name="user_id" placeholder="theirdomain.com">
+            <input type="submit" value="Add">
+        </form>
         {% include 'footer.twig' %}
     </div> <!-- /container -->
 </body>
