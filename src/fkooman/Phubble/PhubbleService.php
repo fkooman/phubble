@@ -14,7 +14,6 @@
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 namespace fkooman\Phubble;
 
 use fkooman\Http\Exception\BadRequestException;
@@ -23,35 +22,34 @@ use fkooman\Http\Request;
 use fkooman\Http\Response;
 use fkooman\Rest\Plugin\Authentication\UserInfoInterface;
 use fkooman\Rest\Service;
+use fkooman\IO\IO;
 use GuzzleHttp\Client;
 use HTMLPurifier;
 use HTMLPurifier_Config;
 use fkooman\Http\Exception\ForbiddenException;
 use fkooman\Tpl\TemplateManagerInterface;
+use Doctrine\ORM\EntityManager;
+use DateTime;
 
 class PhubbleService extends Service
 {
-    /** @var PdoStorage */
-    private $db;
-
-    /** @var AclFetcher */
-    private $aclFetcher;
+    /** @var \Doctrine\ORM\EntityManager */
+    private $entityManager;
 
     /** @var \GuzzleHttp\Client */
     private $client;
 
-    /** @var IO */
+    /** @var \fkooman\IO\IO */
     private $io;
 
     /** @var \fkooman\Tpl\TemplateManagerInterface */
     private $templateManager;
 
-    public function __construct(PdoStorage $db, AclFetcher $aclFetcher, TemplateManagerInterface $templateManager, Client $client = null, IO $io = null)
+    public function __construct(EntityManager $entityManager, TemplateManagerInterface $templateManager, Client $client = null, IO $io = null)
     {
         parent::__construct();
 
-        $this->db = $db;
-        $this->aclFetcher = $aclFetcher;
+        $this->entityManager = $entityManager;
         $this->templateManager = $templateManager;
 
         if (null === $client) {
@@ -178,7 +176,7 @@ class PhubbleService extends Service
             }
         );
 
-        // Both IndieAuth and Bearer are allowed here... is that a good idea?
+        // XXX Both IndieAuth and Bearer are allowed here... is that a good idea?
         $this->post(
             '/:space/_micropub',
             function (Request $request, UserInfoInterface $userInfo, $space) {
@@ -211,60 +209,44 @@ class PhubbleService extends Service
         );
     }
 
-    public function optionsMicropub(Request $request, $space)
-    {
-        #        $origin = $request->getHeader('Origin');
-#        if(null === $origin) {
-#            $origin = '*';
-#        }
-        $response = new Response();
-        $response->setHeader('Access-Control-Allow-Methods', 'POST');
-        $response->setHeader('Access-Control-Allow-Headers', 'Authorization');
-        $response->setHeader('Access-Control-Expose-Headers', 'Location');
-
-        // allow the location header to be passed to the browser
-        //$response->setHeader('XXX-Headers', 'Location');
-#        $response->setHeader('Access-Control-Allow-Origin', $origin);
-
-        return $response;
-    }
-
-    public function optionsSpace(Request $request, $space)
-    {
-        #        $origin = $request->getHeader('Origin');
-#        if(null === $origin) {
-#            $origin = '*';
-#        }
-        $response = new Response();
-        $response->setHeader('Access-Control-Allow-Methods', 'GET');
-        $response->setHeader('Access-Control-Allow-Headers', 'Authorization');
-        //$response->setHeader('Access-Control-Expose-Headers', 'Location');
-
-        // allow the location header to be passed to the browser
-        //$response->setHeader('XXX-Headers', 'Location');
-#        $response->setHeader('Access-Control-Allow-Origin', $origin);
-
-        return $response;
-    }
-
     public function addSpace(Request $request, $userInfo)
     {
-        $id = $request->getPostParameter('space');
-        $owner = $userInfo->getUserId();
-        $acl = null;    // no ACL by default
-        $space = new Space($id, $owner, $acl, false);
-        $this->db->addSpace($space);
+        // XXX validate space_name
+        $spaceName = $request->getPostParameter('space_name');
+        $userId = $userInfo->getUserId();
 
-        return new RedirectResponse($request->getUrl()->getRootUrl().$id.'/', 302);
+        $user = $this->entityManager->getRepository('fkooman\Phubble\User')
+            ->findOneBy(array('name' => $userId));
+        if (!$user) {
+            // XXX create new user?
+            throw new RuntimeException('user not found');
+        }
+
+        $space = new Space();
+        $space->setOwner($user);
+        $space->setName($spaceName);
+        $space->addMember($user);
+        $space->setSecret(false);
+
+        $this->entityManager->persist($space);
+        $this->entityManager->flush();
+
+        return new RedirectResponse(
+            $request->getUrl()->getRootUrl().$space->getName().'/',
+            302
+        );
     }
 
-    public function getEditSpace(Request $request, UserInfoInterface $userInfo, $spaceId)
+    public function getEditSpace(Request $request, UserInfoInterface $userInfo, $spaceName)
     {
-        $space = $this->db->getSpace($spaceId);
+        $space = $this->entityManager->getRepository('fkooman\Phubble\Space')
+            ->findOneBy(array('name' => $spaceName));
+        if (!$space) {
+            throw new NotFoundException('space not found');
+        }
         $userId = $userInfo->getUserId();
-        $spaceAcl = $this->getSpaceAcl($space);
 
-        if ($space->getOwner() !== $userId) {
+        if ($space->getOwner()->getName() !== $userId) {
             throw new ForbiddenException('not allowed to edit this space');
         }
 
@@ -273,38 +255,60 @@ class PhubbleService extends Service
             array(
                 'space' => $space,
                 'indieInfo' => $userInfo,
-                'members' => $spaceAcl,
             )
         );
     }
 
-    public function postEditSpace(Request $request, UserInfoInterface $userInfo, $spaceId)
+    public function postEditSpace(Request $request, UserInfoInterface $userInfo, $spaceName)
     {
-        $space = $this->db->getSpace($spaceId);
+        $space = $this->entityManager->getRepository('fkooman\Phubble\Space')
+            ->findOneBy(array('name' => $spaceName));
+        if (!$space) {
+            throw new NotFoundException('space not found');
+        }
         $userId = $userInfo->getUserId();
 
-        if ($space->getOwner() !== $userId) {
+        if (!$space->isOwner($userId)) {
             throw new ForbiddenException('not allowed to edit this space');
         }
 
-        $space->setOwner($request->getPostParameter('owner'));
-        $space->setAcl($request->getPostParameter('acl'));
-        $space->setSecret('on' === $request->getPostParameter('secret') ? true : false);
-
-        $this->db->updateSpace($space);
-
-        // retrieve/update the ACL for this particular space
-        $aclUrl = $space->getAcl();
-        if (null !== $aclUrl) {
-            $this->aclFetcher->fetchAcl($aclUrl);
+        // find the owner, must be a valid user.
+        $user = $this->entityManager->getRepository('fkooman\Phubble\User')
+            ->findOneBy(array('name' => $request->getPostParameter('owner')));
+        if (!$user) {
+            // XXX create new user?
+            throw new RuntimeException('user not found');
         }
 
-        return new RedirectResponse($request->getUrl()->getRootUrl().$space->getId().'/', 302);
+        $space->setOwner($user);
+#        $space->setOwner($request->getPostParameter('owner'));
+        //$space->setAcl($request->getPostParameter('acl'));
+        $space->setSecret('on' === $request->getPostParameter('secret') ? true : false);
+
+        //$this->db->updateSpace($space);
+
+        // retrieve/update the ACL for this particular space
+#        $aclUrl = $space->getAcl();
+#        if (null !== $aclUrl) {
+#            $this->aclFetcher->fetchAcl($aclUrl);
+#        }
+        $this->entityManager->persist($space);
+        $this->entityManager->flush();
+
+        return new RedirectResponse($request->getUrl()->getRootUrl().$space->getName().'/', 302);
     }
 
     public function getPublicSpaces(Request $request, $userInfo)
     {
-        $publicSpaces = $this->db->getPublicSpaces();
+        #        $publicSpaces = $this->db->getPublicSpaces();
+        $publicSpaces = array();
+
+        $allSpaces = $this->entityManager->getRepository('fkooman\Phubble\Space')->findAll();
+        foreach ($allSpaces as $space) {
+            if (!$space->getSecret()) {
+                $publicSpaces[] = $space;
+            }
+        }
 
         return $this->templateManager->render(
             'publicSpacesPage',
@@ -327,31 +331,26 @@ class PhubbleService extends Service
 
     public function getMySpaces(Request $request, $userInfo)
     {
-        $publicSpaces = $this->db->getPublicSpaces();
-        $secretSpaces = $this->db->getSecretSpaces();
+        #        $publicSpaces = $this->db->getPublicSpaces();
+#        $secretSpaces = $this->db->getSecretSpaces();
 
         $mySpaces = array();
         $memberSpaces = array();
 
-        foreach ($publicSpaces as $s) {
-            if ($userInfo->getUserId() === $s->getOwner()) {
-                $mySpaces[] = $s;
+        $userId = $userInfo->getUserId();
+
+        $allSpaces = $this->entityManager->getRepository('fkooman\Phubble\Space')->findAll();
+
+        foreach ($allSpaces as $space) {
+            if ($userId === $space->getOwner()->getName()) {
+                $mySpaces[] = $space;
             } else {
-                // are we a member?
-                $spaceAcl = $this->getSpaceAcl($s);
-                if (in_array($userInfo->getUserId(), $spaceAcl)) {
-                    $memberSpaces[] = $s;
-                }
-            }
-        }
-        foreach ($secretSpaces as $s) {
-            if ($userInfo->getUserId() === $s->getOwner()) {
-                $mySpaces[] = $s;
-            } else {
-                // are we a member?
-                $spaceAcl = $this->getSpaceAcl($s);
-                if (in_array($userInfo->getUserId(), $spaceAcl)) {
-                    $memberSpaces[] = $s;
+                // are we a member, but not owner
+                $members = $space->getMembers();
+                foreach ($members as $member) {
+                    if ($userId === $member->getName()) {
+                        $memberSpaces[] = $space;
+                    }
                 }
             }
         }
@@ -386,19 +385,24 @@ class PhubbleService extends Service
         );
     }
 
-    public function getMessages(Request $request, $userInfo, $spaceId)
+    public function getMessages(Request $request, $userInfo, $spaceName)
     {
         // FIXME: should throw UnauthorizedException for secret space and no
         // authentication...
 
-        $space = $this->db->getSpace($spaceId);
-        $messages = $this->db->getMessages($space);
+        $space = $this->entityManager->getRepository('fkooman\Phubble\Space')
+            ->findOneBy(array('name' => $spaceName));
+        if (!$space) {
+            throw new NotFoundException('space not found');
+        }
+        $userId = $userInfo->getUserId();
+        $messages = $space->getMessages();
+
+#        $space = $this->db->getSpace($spaceId);
+#        $messages = $this->db->getMessages($space);
         $canPost = false;
         if (null !== $userInfo) {
-            $spaceAcl = $this->getSpaceAcl($space);
-            if (in_array($userInfo->getUserId(), $spaceAcl)) {
-                $canPost = true;
-            }
+            $canPost = $space->isOwner($userId) || $space->isMember($userId);
         }
 
         if ($space->getSecret() && !$canPost) {
@@ -418,9 +422,6 @@ class PhubbleService extends Service
             )
         );
         $response->addHeader('Link', sprintf('<%s>; rel="micropub"', $request->getUrl()->getRootUrl().$space->getId().'/_micropub'));
-        if (null !== $space->getAcl()) {
-            $response->addHeader('Link', sprintf('<%s>; rel="acl"', $space->getAcl()));
-        }
 
         return $response;
     }
@@ -480,22 +481,42 @@ class PhubbleService extends Service
         return new RedirectResponse($request->getUrl()->getRootUrl().$space->getId().'/', 302);
     }
 
-    public function postMessage(Request $request, UserInfoInterface $userInfo, $spaceId)
+    public function postMessage(Request $request, UserInfoInterface $userInfo, $spaceName)
     {
-        $space = $this->db->getSpace($spaceId);
-        $spaceAcl = $this->getSpaceAcl($space);
+        $space = $this->entityManager->getRepository('fkooman\Phubble\Space')
+            ->findOneBy(array('name' => $spaceName));
+        if (!$space) {
+            throw new NotFoundException('space not found');
+        }
         $userId = $userInfo->getUserId();
 
-        if (!in_array($userId, $spaceAcl)) {
-            throw new ForbiddenException('not allowed to delete this message');
+        $user = $this->entityManager->getRepository('fkooman\Phubble\User')
+            ->findOneBy(array('name' => $userId));
+        if (!$user) {
+            throw new NotFoundException('user not found');
         }
 
-        $id = $this->io->getRandomHex();
-        $postTime = $this->io->getTime();
-        $messageBody = $this->validateMessageBody($request->getPostParameter('message_body'));
+        if (!$space->isOwner($userId) && !$space->isMember($userId)) {
+            throw new ForbiddenException('not allowed to post this message');
+        }
 
-        $message = new Message($space, $id, $userId, $messageBody, $postTime);
-        $this->db->addMessage($message);
+        $message = new Message();
+        $message->setAuthor($user);
+        $message->setSpace($space);
+        $dt = new DateTime();
+        $dt->setTimestamp($this->io->getTime());
+
+        $message->setPosted($dt);
+        $message->setContent($this->validateMessageBody($request->getPostParameter('message_body')));
+        $this->entityManager->persist($message);
+
+#        $space->addMessage($message);
+
+#        $this->entityManager->persist($space);
+        $this->entityManager->flush();
+
+#        $message = new Message($space, $id, $userId, $messageBody, $postTime);
+#        $this->db->addMessage($message);
 
         return new RedirectResponse($request->getUrl()->toString(), 302);
     }
@@ -524,21 +545,21 @@ class PhubbleService extends Service
         return $response;
     }
 
-    private function getSpaceAcl(Space $space)
-    {
-        $spaceAcl = array(
-            $space->getOwner(),
-        );
+#    private function getSpaceAcl(Space $space)
+#    {
+#        $spaceAcl = array(
+#            $space->getOwner(),
+#        );
 
-        if (null === $space->getAcl()) {
-            // this space has no ACL defined
-            return $spaceAcl;
-        }
+#        if (null === $space->getAcl()) {
+#            // this space has no ACL defined
+#            return $spaceAcl;
+#        }
 
-        $aclData = $this->aclFetcher->getAcl($space->getAcl());
+#        $aclData = $this->aclFetcher->getAcl($space->getAcl());
 
-        return array_values(array_merge($spaceAcl, $aclData['members']));
-    }
+#        return array_values(array_merge($spaceAcl, $aclData['members']));
+#    }
 
     private function validateMessageBody($messageBody)
     {
@@ -563,5 +584,41 @@ class PhubbleService extends Service
         }
 
         return $purifiedBody;
+    }
+
+    public function optionsMicropub(Request $request, $space)
+    {
+        #        $origin = $request->getHeader('Origin');
+#        if(null === $origin) {
+#            $origin = '*';
+#        }
+        $response = new Response();
+        $response->setHeader('Access-Control-Allow-Methods', 'POST');
+        $response->setHeader('Access-Control-Allow-Headers', 'Authorization');
+        $response->setHeader('Access-Control-Expose-Headers', 'Location');
+
+        // allow the location header to be passed to the browser
+        //$response->setHeader('XXX-Headers', 'Location');
+#        $response->setHeader('Access-Control-Allow-Origin', $origin);
+
+        return $response;
+    }
+
+    public function optionsSpace(Request $request, $space)
+    {
+        #        $origin = $request->getHeader('Origin');
+#        if(null === $origin) {
+#            $origin = '*';
+#        }
+        $response = new Response();
+        $response->setHeader('Access-Control-Allow-Methods', 'GET');
+        $response->setHeader('Access-Control-Allow-Headers', 'Authorization');
+        //$response->setHeader('Access-Control-Expose-Headers', 'Location');
+
+        // allow the location header to be passed to the browser
+        //$response->setHeader('XXX-Headers', 'Location');
+#        $response->setHeader('Access-Control-Allow-Origin', $origin);
+
+        return $response;
     }
 }

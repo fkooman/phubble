@@ -15,8 +15,8 @@
             <ul>
             {% for space in mySpaces %}
                 <li>
-                    <a href="{{ root|e }}{{ space.getId }}/">{{ space.getId|e }}</a>
-                    (<a href="{{ root|e }}{{ space.getId }}/_edit">edit</a>)
+                    <a href="{{ root|e }}{{ space.getName }}/">{{ space.getName|e }}</a>
+                    (<a href="{{ root|e }}{{ space.getName }}/_edit">edit</a>)
                     {% if space.getSecret %}
                         (secret space)
                     {% endif %}
@@ -34,7 +34,7 @@
             <ul>
             {% for space in memberSpaces %}
                 <li>
-                    <a href="{{ root|e }}{{ space.getId }}/">{{ space.getId|e }}</a>
+                    <a href="{{ root|e }}{{ space.getName }}/">{{ space.getName|e }}</a>
                     {% if space.getSecret %}
                         (secret space)
                     {% endif %}
@@ -48,7 +48,7 @@
 Choose a name for your space and create it!
         </p>
         <form class="create_space" method="post" action="{{ root|e }}">
-            <input type="text" name="space" placeholder="Space Name..." required="required">
+            <input type="text" name="space_name" placeholder="Space Name..." required="required">
             <input class="info" type="submit" value="Create">
         </form>
 

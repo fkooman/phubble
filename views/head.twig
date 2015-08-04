@@ -13,7 +13,4 @@
         <link rel="authorization_endpoint" href="{{ authorizationEndpoint|e }}">
         <link rel="token_endpoint" href="{{ tokenEndpoint|e }}">
     {% endif %}
-    {% if space is defined and space.getAcl %}
-        <link rel="acl" href="{{ space.getAcl|e }}">
-    {% endif %}
 </head>

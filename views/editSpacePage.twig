@@ -6,7 +6,7 @@
     <div id="container">
         {% include 'header.twig' %}
 
-        <h2>{{ space.getId|e }}</h2>
+        <h2>{{ space.getName|e }}</h2>
         <p>
 Here you can modify some space settings.
         </p>
@@ -16,10 +16,7 @@ anymore!
         </p>
         <form class="edit_space" method="post" action="">
             <div>
-                <label for="owner">Owner</label><input id="owner" type="text" name="owner" value="{{ space.getOwner|e }}">
-            </div>
-            <div>
-                <label for="acl">Group ACL (see <a href="{{ root|e}}faq#acl">FAQ</a>)</label><input id="acl" type="text" name="acl" value="{{ space.acl|e }}">
+                <label for="owner">Owner</label><input id="owner" type="text" name="owner" value="{{ space.getOwner.getName|e }}">
             </div>
             <div>
                 {% if space.getSecret %}
@@ -31,15 +28,14 @@ anymore!
             <div>
                 <input type="submit" value="Save">
             </div>
-            {% if members %}
+            {% if space.getMembers %}
                 <h3>Members</h3>
                 <p>
-This is a list of members based on the retrieved ACL and the current owner of
-the space.
+This is a list of members of this space:
                 </p>
                 <ul>
-                {% for member in members %}
-                    <li><a href="{{ member|e }}">{{ member|e }}</a></li>
+                {% for member in space.getMembers %}
+                    <li><a href="{{ member.getName|e }}">{{ member.getName|e }}</a></li>
                 {% endfor %}
                 </ul>
             {% endif %}

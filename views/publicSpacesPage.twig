@@ -16,7 +16,7 @@
 
             <ul>
             {% for space in publicSpaces %}
-                <li><a href="{{ root|e }}{{ space.getId }}/">{{ space.getId|e }}</a></li>
+                <li><a href="{{ root|e }}{{ space.getName }}/">{{ space.getName|e }}</a></li>
             {% endfor %}
             </ul>
         {% else %}

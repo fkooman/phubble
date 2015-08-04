@@ -2,46 +2,55 @@
 
 namespace fkooman\Phubble;
 
-use InvalidArgumentException;
+use Doctrine\Common\Collections\ArrayCollection;
 
+/**
+ * @Entity @Table(name="spaces")
+ **/
 class Space
 {
-    private $id;
-    private $owner;
-    private $acl;
-    private $secret;
+    /**
+     * @Id @Column(type="integer") @GeneratedValue
+     *
+     * @var int
+     */
+    protected $id;
 
-    public function __construct($id, $owner, $acl, $secret)
-    {
-        $this->id = InputValidation::validateString($id);
-        $this->owner = InputValidation::validateUrl($owner);
-        $this->acl = InputValidation::validateUrl($acl, true);
-        $this->secret = InputValidation::validateBoolean($secret);
-    }
+    /**
+     * @Column(type="string")
+     *
+     * @var string
+     */
+    protected $name;
 
-    public function getId()
-    {
-        return $this->id;
-    }
+    /**
+     * @Column(type="boolean")
+     *
+     * @var bool
+     */
+    protected $secret;
 
-    public function getOwner()
-    {
-        return $this->owner;
-    }
+    /**
+     * @ManyToOne(targetEntity="User", inversedBy="ownedSpaces")
+     **/
+    protected $owner;
 
-    public function getAcl()
-    {
-        return $this->acl;
-    }
+    /**
+     * @ManyToMany(targetEntity="User", inversedBy="memberSpaces")
+     **/
+    protected $members;
 
-    public function setOwner($owner)
-    {
-        $this->owner = InputValidation::validateString($owner);
-    }
+    /**
+     * @OneToMany(targetEntity="Message", mappedBy="space")
+     *
+     * @var Message[]
+     **/
+    protected $messages = null;
 
-    public function setAcl($acl)
+    public function __construct()
     {
-        $this->acl = InputValidation::validateUrl($acl, true);
+        $this->messages = new ArrayCollection();
+        $this->members = new ArrayCollection();
     }
 
     public function getSecret()
@@ -51,25 +60,68 @@ class Space
 
     public function setSecret($secret)
     {
-        $this->secret = InputValidation::validateBoolean($secret);
+        $this->secret = $secret;
     }
 
-    public static function fromArray(array $a)
+    public function getId()
     {
-        $requiredKeys = array('id', 'owner', 'acl', 'secret');
-        self::arrayHasKeys($a, $requiredKeys);
-
-        return new self($a['id'], $a['owner'], $a['acl'], (bool) $a['secret']);
+        return $this->id;
     }
 
-    public static function arrayHasKeys(array $a, array $keys)
+    public function setName($name)
     {
-        foreach ($keys as $k) {
-            if (!array_key_exists($k, $a)) {
-                throw new InvalidArgumentException(
-                    sprintf('missing key "%s"', $k)
-                );
+        $this->name = $name;
+    }
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function setOwner($owner)
+    {
+        $owner->addOwnedSpace($this);
+        $this->owner = $owner;
+    }
+
+    public function getOwner()
+    {
+        return $this->owner;
+    }
+
+    public function isOwner($userName)
+    {
+        return $userName === $this->owner->getName();
+    }
+
+    public function isMember($userName)
+    {
+        foreach ($this->members as $member) {
+            if ($userName === $member->getName()) {
+                return true;
             }
         }
+
+        return false;
+    }
+
+    public function addMember($member)
+    {
+        $this->members[] = $member;
+    }
+
+    public function getMembers()
+    {
+        return $this->members;
+    }
+
+    public function addMessage($message)
+    {
+        $this->messages[] = $message;
+    }
+
+    public function getMessages()
+    {
+        return $this->messages;
     }
 }

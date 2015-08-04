@@ -14,6 +14,7 @@
     "license": "AGPL-3.0",
     "name": "fkooman/phubble",
     "require": {
+        "doctrine/orm": "^2.5",
         "ext-date": "*",
         "ext-filter": "*",
         "ext-json": "*",
@@ -28,6 +29,7 @@
         "fkooman/rest-plugin-authentication-indieauth": "^1.0.0",
         "fkooman/tpl": "^1.0.0",
         "guzzlehttp/guzzle": "~5.3",
-        "php": ">= 5.4"
+        "php": ">= 5.4",
+        "fkooman/io": "^1.0"
     }
 }

@@ -16,28 +16,37 @@
  */
 require_once dirname(__DIR__).'/vendor/autoload.php';
 
+use fkooman\Http\Request;
 use fkooman\Ini\IniReader;
 use fkooman\Phubble\PhubbleService;
-use fkooman\Rest\Plugin\Authentication\IndieAuth\IndieAuthAuthentication;
+use fkooman\Rest\Plugin\Authentication\AuthenticationPlugin;
 use fkooman\Rest\Plugin\Authentication\Bearer\BearerAuthentication;
 use fkooman\Rest\Plugin\Authentication\Bearer\IntrospectionBearerValidator;
-use fkooman\Phubble\PdoStorage;
-use fkooman\Http\Request;
-use fkooman\Rest\Plugin\Authentication\AuthenticationPlugin;
-use fkooman\Phubble\AclFetcher;
+use fkooman\Rest\Plugin\Authentication\IndieAuth\IndieAuthAuthentication;
 use fkooman\Tpl\TwigTemplateManager;
+use Doctrine\ORM\Tools\Setup;
+use Doctrine\ORM\EntityManager;
 
 $iniReader = IniReader::fromFile(
-    dirname(__DIR__).'/config/config.ini'
+    dirname(__DIR__).'/config/phubble.ini'
 );
 
 // STORAGE
-$pdo = new PDO(
-    $iniReader->v('PdoStorage', 'dsn'),
-    $iniReader->v('PdoStorage', 'username', false),
-    $iniReader->v('PdoStorage', 'password', false)
+$databaseUrl = $iniReader->v('Database', 'url');
+
+$isDevMode = true;
+$config = Setup::createAnnotationMetadataConfiguration(
+    array(
+        dirname(__DIR__).'/src',
+    ),
+    $isDevMode
 );
-$pdoStorage = new PdoStorage($pdo);
+$entityManager = EntityManager::create(
+    array(
+        'url' => $databaseUrl,
+    ),
+    $config
+);
 
 $request = new Request($_SERVER);
 
@@ -48,6 +57,7 @@ $templateManager = new TwigTemplateManager(
     ),
     $iniReader->v('templateCache', false, null)
 );
+
 $templateManager->setDefault(
     array(
         'root' => $request->getUrl()->getRoot(),
@@ -57,9 +67,7 @@ $templateManager->setDefault(
     )
 );
 
-$aclFetcher = new AclFetcher($iniReader->v('Acl', 'aclPath'));
-
-$service = new PhubbleService($pdoStorage, $aclFetcher, $templateManager);
+$service = new PhubbleService($entityManager, $templateManager);
 
 $bearerAuth = new BearerAuthentication(
     new IntrospectionBearerValidator(

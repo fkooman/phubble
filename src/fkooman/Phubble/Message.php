@@ -2,66 +2,88 @@
 
 namespace fkooman\Phubble;
 
-use InvalidArgumentException;
+use DateTime;
 
+/**
+ * @Entity @Table(name="messages")
+ **/
 class Message
 {
-    private $space;
-    private $id;
-    private $authorId;
-    private $messageBody;
-    private $postTime;
+    /**
+     * @Id @Column(type="integer") @GeneratedValue
+     *
+     * @var int
+     */
+    protected $id;
 
-    public function __construct(Space $space, $id, $authorId, $messageBody, $postTime)
-    {
-        $this->space = $space;
-        $this->id = InputValidation::validateString($id);
-        $this->authorId = InputValidation::validateUrl($authorId);
-        $this->messageBody = InputValidation::validateString($messageBody);
-        $this->postTime = InputValidation::validateInt($postTime);
-    }
+    /**
+     * @Column(type="string")
+     *
+     * @var string
+     */
+    protected $content;
 
-    public function getSpace()
-    {
-        return $this->space;
-    }
+    /**
+     * @Column(type="datetime")
+     *
+     * @var DateTime
+     */
+    protected $posted;
+
+    /**
+     * @ManyToOne(targetEntity="User", inversedBy="postedMessages")
+     **/
+    protected $author;
+
+    /**
+     * @ManyToOne(targetEntity="Space", inversedBy="messages")
+     **/
+    protected $space;
 
     public function getId()
     {
         return $this->id;
     }
 
-    public function getAuthorId()
+    public function setContent($content)
     {
-        return $this->authorId;
+        $this->content = $content;
     }
 
-    public function getMessageBody()
+    public function getContent()
     {
-        return $this->messageBody;
+        return $this->content;
     }
 
-    public function getPostTime()
+    public function setPosted(DateTime $posted)
     {
-        return $this->postTime;
+        $this->posted = $posted;
     }
 
-    public static function fromArray(Space $space, array $a)
+    public function getPosted()
     {
-        $requiredKeys = array('id', 'author_id', 'message_body', 'post_time');
-        self::arrayHasKeys($a, $requiredKeys);
-
-        return new self($space, $a['id'], $a['author_id'], $a['message_body'], (int) $a['post_time']);
+        return $this->posted;
     }
 
-    public static function arrayHasKeys(array $a, array $keys)
+    public function setAuthor($author)
     {
-        foreach ($keys as $k) {
-            if (!array_key_exists($k, $a)) {
-                throw new InvalidArgumentException(
-                    sprintf('missing key "%s"', $k)
-                );
-            }
-        }
+        $author->addPostedMessage($this);
+        $this->author = $author;
+    }
+
+    public function getAuthor()
+    {
+        return $this->author;
+    }
+
+    public function setSpace($space)
+    {
+        $space->addMessage($this);
+        $this->space = $space;
+    }
+
+    public function getSpace()
+    {
+        return $this->space;
     }
 }
