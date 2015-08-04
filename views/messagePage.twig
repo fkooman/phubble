@@ -7,12 +7,12 @@
         {% include 'header.twig' %}
 
         {% if space.getSecret %}
-            <h2>{{ space.getId|e }} (secret)</h2>
+            <h2>{{ space.getName|e }} (secret)</h2>
         {% else %}
-            <h2>{{ space.getId|e }}</h2>
+            <h2>{{ space.getName|e }}</h2>
         {% endif %}
 
-        {% if indieInfo and message.getAuthorId == indieInfo.getUserId %}
+        {% if indieInfo and message.getAuthor.getName == indieInfo.getUserId %}
         <form method="post" action="{{ message.id|e }}">
             <input type="hidden" name="_METHOD" value="DELETE">
             <input type="submit" class="err" value="Delete">
@@ -22,12 +22,12 @@
         <table class="message h-entry">
             <tr>
                 <th>
-                    <a class="p-author" href="{{ message.getAuthorId|e }}">{{ message.getAuthorId|e }}</a>
-                    <span class="date dt-published">{{ message.getPostTime|e|date("Y-m-d H:i:s T") }}</span>
+                    <a class="p-author" href="{{ message.getAuthor.getName|e }}">{{ message.getAuthor.getName|e }}</a>
+                    <span class="date dt-published">{{ message.getPosted|e|date("Y-m-d H:i:s T") }}</span>
                 </th>
             </tr>
             <tr>
-                <td class="e-content">{{ message.getMessageBody|raw }}</td>
+                <td class="e-content">{{ message.getContent|raw }}</td>
             </tr>
         </table>
 

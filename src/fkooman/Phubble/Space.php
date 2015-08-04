@@ -17,7 +17,7 @@ class Space
     protected $id;
 
     /**
-     * @Column(type="string")
+     * @Column(type="string", unique=true)
      *
      * @var string
      */

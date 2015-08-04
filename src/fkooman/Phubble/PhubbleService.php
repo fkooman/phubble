@@ -17,6 +17,7 @@
 namespace fkooman\Phubble;
 
 use fkooman\Http\Exception\BadRequestException;
+use fkooman\Http\Exception\NotFoundException;
 use fkooman\Http\RedirectResponse;
 use fkooman\Http\Request;
 use fkooman\Http\Response;
@@ -215,12 +216,7 @@ class PhubbleService extends Service
         $spaceName = $request->getPostParameter('space_name');
         $userId = $userInfo->getUserId();
 
-        $user = $this->entityManager->getRepository('fkooman\Phubble\User')
-            ->findOneBy(array('name' => $userId));
-        if (!$user) {
-            // XXX create new user?
-            throw new RuntimeException('user not found');
-        }
+        $user = $this->getUser($userId);
 
         $space = new Space();
         $space->setOwner($user);
@@ -272,26 +268,11 @@ class PhubbleService extends Service
             throw new ForbiddenException('not allowed to edit this space');
         }
 
-        // find the owner, must be a valid user.
-        $user = $this->entityManager->getRepository('fkooman\Phubble\User')
-            ->findOneBy(array('name' => $request->getPostParameter('owner')));
-        if (!$user) {
-            // XXX create new user?
-            throw new RuntimeException('user not found');
-        }
+        $user = $this->getUser($request->getPostParameter('owner'));
 
         $space->setOwner($user);
-#        $space->setOwner($request->getPostParameter('owner'));
-        //$space->setAcl($request->getPostParameter('acl'));
         $space->setSecret('on' === $request->getPostParameter('secret') ? true : false);
 
-        //$this->db->updateSpace($space);
-
-        // retrieve/update the ACL for this particular space
-#        $aclUrl = $space->getAcl();
-#        if (null !== $aclUrl) {
-#            $this->aclFetcher->fetchAcl($aclUrl);
-#        }
         $this->entityManager->persist($space);
         $this->entityManager->flush();
 
@@ -300,7 +281,6 @@ class PhubbleService extends Service
 
     public function getPublicSpaces(Request $request, $userInfo)
     {
-        #        $publicSpaces = $this->db->getPublicSpaces();
         $publicSpaces = array();
 
         $allSpaces = $this->entityManager->getRepository('fkooman\Phubble\Space')->findAll();
@@ -331,9 +311,6 @@ class PhubbleService extends Service
 
     public function getMySpaces(Request $request, $userInfo)
     {
-        #        $publicSpaces = $this->db->getPublicSpaces();
-#        $secretSpaces = $this->db->getSecretSpaces();
-
         $mySpaces = array();
         $memberSpaces = array();
 
@@ -395,13 +372,12 @@ class PhubbleService extends Service
         if (!$space) {
             throw new NotFoundException('space not found');
         }
-        $userId = $userInfo->getUserId();
+
         $messages = $space->getMessages();
 
-#        $space = $this->db->getSpace($spaceId);
-#        $messages = $this->db->getMessages($space);
         $canPost = false;
         if (null !== $userInfo) {
+            $userId = $userInfo->getUserId();
             $canPost = $space->isOwner($userId) || $space->isMember($userId);
         }
 
@@ -426,21 +402,38 @@ class PhubbleService extends Service
         return $response;
     }
 
-    public function getMessage(Request $request, $userInfo, $spaceId, $id)
+    public function getMessage(Request $request, $userInfo, $spaceName, $id)
     {
         // FIXME: should throw UnauthorizedException for secret space and no
         // authentication...
+        $space = $this->entityManager->getRepository('fkooman\Phubble\Space')
+            ->findOneBy(array('name' => $spaceName));
+        if (!$space) {
+            throw new NotFoundException('space not found');
+        }
 
-        $space = $this->db->getSpace($spaceId);
-        $message = $this->db->getMessage($space, $id);
+        $message = $this->entityManager->getRepository('fkooman\Phubble\Message')
+            ->findOneBy(array('id' => $id, 'space' => $space));
+        if (!$message) {
+            throw new NotFoundException('message not found');
+        }
+
+#        $space = $this->db->getSpace($spaceId);
+#        $message = $this->db->getMessage($space, $id);
 
         $canPost = false;
         if (null !== $userInfo) {
-            $spaceAcl = $this->getSpaceAcl($space);
-            if (in_array($userInfo->getUserId(), $spaceAcl)) {
-                $canPost = true;
-            }
+            $userId = $userInfo->getUserId();
+            $canPost = $space->isOwner($userId) || $space->isMember($userId);
         }
+
+#        $canPost = false;
+#        if (null !== $userInfo) {//
+#            //$spaceAcl = $this->getSpaceAcl($space);
+#            //if (in_array($userInfo->getUserId(), $spaceAcl)) {
+#            //    $canPost = true;
+#            //}
+#        }
 
         if ($space->getSecret() && !$canPost) {
             throw new ForbiddenException('no permission to access this post');
@@ -509,14 +502,7 @@ class PhubbleService extends Service
         $message->setPosted($dt);
         $message->setContent($this->validateMessageBody($request->getPostParameter('message_body')));
         $this->entityManager->persist($message);
-
-#        $space->addMessage($message);
-
-#        $this->entityManager->persist($space);
         $this->entityManager->flush();
-
-#        $message = new Message($space, $id, $userId, $messageBody, $postTime);
-#        $this->db->addMessage($message);
 
         return new RedirectResponse($request->getUrl()->toString(), 302);
     }
@@ -544,22 +530,6 @@ class PhubbleService extends Service
 
         return $response;
     }
-
-#    private function getSpaceAcl(Space $space)
-#    {
-#        $spaceAcl = array(
-#            $space->getOwner(),
-#        );
-
-#        if (null === $space->getAcl()) {
-#            // this space has no ACL defined
-#            return $spaceAcl;
-#        }
-
-#        $aclData = $this->aclFetcher->getAcl($space->getAcl());
-
-#        return array_values(array_merge($spaceAcl, $aclData['members']));
-#    }
 
     private function validateMessageBody($messageBody)
     {
@@ -620,5 +590,20 @@ class PhubbleService extends Service
 #        $response->setHeader('Access-Control-Allow-Origin', $origin);
 
         return $response;
+    }
+
+    private function getUser($userId)
+    {
+        $user = $this->entityManager->getRepository('fkooman\Phubble\User')
+            ->findOneBy(array('name' => $userId));
+        if (!$user) {
+            $user = new User();
+            $user->setName($userId);
+
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+        }
+
+        return $user;
     }
 }
