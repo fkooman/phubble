@@ -178,9 +178,16 @@ class PhubbleService extends Service
         );
 
         $this->post(
-            '/:space/_add_member',
+            '/:space/members/',
             function (Request $request, UserInfoInterface $userInfo, $space) {
                 return $this->addMember($request, $userInfo, $space);
+            }
+        );
+
+        $this->delete(
+            '/:space/members/:id',
+            function (Request $request, UserInfoInterface $userInfo, $space, $id) {
+                return $this->deleteMember($request, $userInfo, $space, $id);
             }
         );
 
@@ -506,10 +513,40 @@ class PhubbleService extends Service
         }
         $userId = $userInfo->getUserId();
 
+        if (!$space->isMember($userId)) {
+            throw new ForbiddenException('not a member of this space');
+        }
+
         $userToAdd = $request->getPostParameter('user_id');
         $user = $this->getUser($userToAdd);
         $space->addMember($user);
 
+        $this->entityManager->persist($space);
+        $this->entityManager->flush();
+
+        return new RedirectResponse($request->getUrl()->getRootUrl().$space->getName().'/_edit', 302);
+    }
+
+    public function deleteMember(Request $request, UserInfoInterface $userInfo, $spaceName, $id)
+    {
+        $space = $this->entityManager->getRepository('fkooman\Phubble\Space')
+            ->findOneBy(array('name' => $spaceName));
+        if (!$space) {
+            throw new NotFoundException('space not found');
+        }
+        $userId = $userInfo->getUserId();
+
+        $user = $this->entityManager->getRepository('fkooman\Phubble\User')
+            ->find($id);
+        if (!$user) {
+            throw new NotFoundException('user not found');
+        }
+
+        if (!$space->isOwner($userId)) {
+            throw new ForbiddenException('not the owner of this space');
+        }
+
+        $space->getMembers()->removeElement($user);
         $this->entityManager->persist($space);
         $this->entityManager->flush();
 

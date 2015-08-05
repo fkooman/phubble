@@ -28,20 +28,22 @@ anymore!
             <div>
                 <input type="submit" value="Save">
             </div>
-            {% if space.getMembers %}
-                <h3>Members</h3>
-                <p>
-This is a list of members of this space:
-                </p>
-                <ul>
-                {% for member in space.getMembers %}
-                    <li><a href="{{ member.getName|e }}">{{ member.getName|e }}</a></li>
-                {% endfor %}
-                </ul>
-            {% endif %}
         </form>
+
+        {% if space.getMembers %}
+            <h3>Members</h3>
+            <p>
+This is a list of members of this space:
+            </p>
+            <ul>
+            {% for member in space.getMembers %}
+                <li>{{ member.getName|e }} (<form class="inline" method="POST" action="members/{{ member.getId|e }}"><input type="hidden" name="_METHOD" value="DELETE"><input type="submit" value="Delete"></form>)</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
         <h3>Add Member</h3>
-        <form method="post" class="edit_space" action="_add_member">
+        <form method="post" class="edit_space" action="members/">
              <label for="add_member">Member</label><input id="add_member" type="text" name="user_id" placeholder="theirdomain.com">
             <input type="submit" value="Add">
         </form>

@@ -46,6 +46,10 @@ ul.header li.last:after, ul.footer li.last:after {
     content: "";
 }
 
+form.inline {
+    display: inline;
+}
+
 form.edit_space, form.create_message {
     padding-right: 1em;
     margin: 1em auto;

@@ -768,16 +768,16 @@
         },
         {
             "name": "fkooman/rest",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fkooman/php-lib-rest.git",
-                "reference": "55564781fe97fd3121fccdd7d1250f8b1f267f2b"
+                "reference": "0b1822e10cb5bf8f8f9f64c6802fffead8cc59d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/55564781fe97fd3121fccdd7d1250f8b1f267f2b",
-                "reference": "55564781fe97fd3121fccdd7d1250f8b1f267f2b",
+                "url": "https://api.github.com/repos/fkooman/php-lib-rest/zipball/0b1822e10cb5bf8f8f9f64c6802fffead8cc59d3",
+                "reference": "0b1822e10cb5bf8f8f9f64c6802fffead8cc59d3",
                 "shasum": ""
             },
             "require": {
@@ -810,7 +810,7 @@
                 }
             ],
             "description": "Simple PHP library for writing REST services.",
-            "time": "2015-07-20 21:02:38"
+            "time": "2015-08-05 15:53:36"
         },
         {
             "name": "fkooman/rest-plugin-authentication",
